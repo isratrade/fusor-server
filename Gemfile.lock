@@ -84,6 +84,7 @@ GEM
       rake (>= 0.8.1)
     pg (0.19.0)
     rack (1.6.5)
+    rack-cors (0.4.1)
     rack-test (0.6.3)
       rack (>= 1.0)
     rails (4.2.0)
@@ -154,6 +155,7 @@ DEPENDENCIES
   jquery-rails
   passenger
   pg
+  rack-cors
   rails (= 4.2.0)
   sass-rails (~> 5.0)
   sdoc (~> 0.4.0)
