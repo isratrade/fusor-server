@@ -3,9 +3,10 @@ class Fusor::Api::V21::OrganizationsController < ApplicationController
   #include Api::Version21
 
   def index
-    connection = Faraday.new 'http://localhost:3000/' do |conn|
+    connection = Faraday.new ENV['satellite_url'] do |conn|
       conn.response :json
       conn.adapter Faraday.default_adapter
+      conn.basic_auth ENV['api_username'], ENV['api_password']
     end
 
     json_response = connection.get('api/v2/organizations')
@@ -14,9 +15,10 @@ class Fusor::Api::V21::OrganizationsController < ApplicationController
   end
 
   def show
-    connection = Faraday.new 'http://localhost:3000/' do |conn|
+    connection = Faraday.new ENV['satellite_url'] do |conn|
       conn.response :json
       conn.adapter Faraday.default_adapter
+      conn.basic_auth ENV['api_username'], ENV['api_password']
     end
 
     # json_response = connection.get("katello/api/v2/organizations/#{params[:id]}")
