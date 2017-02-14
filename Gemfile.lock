@@ -55,6 +55,10 @@ GEM
     debug_inspector (0.0.2)
     erubis (2.7.0)
     execjs (2.7.0)
+    faraday (0.11.0)
+      multipart-post (>= 1.2, < 3)
+    faraday_middleware (0.11.0.1)
+      faraday (>= 0.7.4, < 1.0)
     globalid (0.3.7)
       activesupport (>= 4.1.0)
     i18n (0.8.0)
@@ -77,6 +81,7 @@ GEM
     mime-types-data (3.2016.0521)
     mini_portile2 (2.1.0)
     minitest (5.10.1)
+    multipart-post (2.0.0)
     nokogiri (1.7.0.1)
       mini_portile2 (~> 2.1.0)
     passenger (5.1.2)
@@ -152,6 +157,8 @@ DEPENDENCIES
   active_model_serializers (~> 0.10.4)
   annotate
   byebug
+  faraday
+  faraday_middleware
   jquery-rails
   passenger
   pg
