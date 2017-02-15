@@ -18,7 +18,8 @@ class Fusor::Api::V21::DeploymentsController < ApplicationController
     @deployment = Deployment.new(deployment_params)
 
     if @deployment.save
-      render json: @deployment, status: :created
+      render json: @deployment, status: :created , root: "deployment", adapter: :json
+
     else
       render json: @deployment.errors, status: :unprocessable_entity
     end
