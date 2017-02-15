@@ -1,11 +1,13 @@
 Rails.application.routes.draw do
 
-  resources :deployments
-
   namespace :fusor do
     namespace :api do
       namespace :v21 do
         resources :deployments
+        resources :organizations, only: [:index, :show]
+        resources :lifecycle_environments, only: [:index, :show, :create]
+        resources :hostgroups, only: [:index, :show]
+        resources :settings, only: [:index]
       end
     end
   end
