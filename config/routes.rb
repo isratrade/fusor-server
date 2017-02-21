@@ -3,11 +3,31 @@ Rails.application.routes.draw do
   namespace :fusor do
     namespace :api do
       namespace :v21 do
-        resources :deployments
-        resources :organizations, only: [:index, :show]
+
+        resources :deployments, only: [:index, :show, :update] do
+          member do
+            put :deploy
+            put :redeploy
+            get :validate
+            get :validate_cdn
+            get :log
+            get :openshift_disk_space
+            get :check_mount_point
+            get :compatible_cpu_families
+          end
+        end
+
+        resources :organizations, only: [:index, :show] do
+          get :subscriptions, on: :member
+        end
         resources :lifecycle_environments, only: [:index, :show, :create]
         resources :hostgroups, only: [:index, :show]
         resources :settings, only: [:index]
+
+        resources :discovered_hosts, only: [:index] do
+          put :rename, :on => :member
+        end
+
       end
     end
   end
