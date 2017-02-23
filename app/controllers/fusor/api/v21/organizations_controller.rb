@@ -1,17 +1,11 @@
 class Fusor::Api::V21::OrganizationsController < ApplicationController
 
+  include Fusor::Api::V21::OrganizationsMixin
+
   #include Api::Version21
 
   def index
-    connection = Faraday.new SATELLITE_URL do |conn|
-      conn.response :json
-      conn.adapter Faraday.default_adapter
-      conn.basic_auth API_USERNAME, API_PASSWORD
-    end
-
-    json_response = connection.get('api/v2/organizations')
-
-    render json: {organizations: json_response.body["results"]}
+    render json: {organizations: get_organizations}
   end
 
   def show
@@ -62,4 +56,14 @@ class Fusor::Api::V21::OrganizationsController < ApplicationController
 
   end
 
+  def subscriptions
+    connection = Faraday.new SATELLITE_URL do |conn|
+      conn.response :json
+      conn.adapter Faraday.default_adapter
+      conn.basic_auth API_USERNAME, API_PASSWORD
+    end
+
+    json_response = connection.get("katello/api/v2/organizations/#{params[:id]}/subscriptions")
+    render json: json_response.body
+  end
 end

@@ -98,4 +98,21 @@
 
 class Deployment < ActiveRecord::Base
   validates :name, :presence => true, :uniqueness => {:scope => :organization_id}
+
+  alias_attribute :discovered_host_id, :rhev_engine_host_id
+
+  scoped_search :on => [:id, :name, :updated_at], :complete_value => true
+  scoped_search :in => :organization, :on => :name, :rename => :organization
+  scoped_search :in => :lifecycle_environment, :on => :name, :rename => :lifecycle_environment
+  scoped_search :in => :foreman_task, :on => :state, :rename => :status
+
+  # used by ember-data for .find('model', {id: [1,2,3]})
+  scope :by_id, proc { |n| where(:id => n) if n.present? }
+
+  # since there are no has_many relationships
+  attr_accessor :discovered_host_ids,
+                :openshift_host_ids,
+                :subscription_ids,
+                :introspection_task_ids
+
 end
