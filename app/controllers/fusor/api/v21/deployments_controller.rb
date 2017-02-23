@@ -45,7 +45,7 @@ class Fusor::Api::V21::DeploymentsController < ApplicationController
     end
 
     render json: {deployments: @deployments.as_json(methods: [
-                                  :discovered_host_ids
+                                  :discovered_host_id, :discovered_host_ids
                                   ]),
                  organizations: get_organizations,
                  lifecycle_environments: get_lifecycle_environments,
