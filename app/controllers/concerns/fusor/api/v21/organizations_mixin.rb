@@ -21,5 +21,25 @@ module Fusor::Api::V21
       json_response.body["results"]
     end
 
+    def get_organization(id)
+      connection = Faraday.new SATELLITE_URL do |conn|
+        conn.response :json
+        conn.adapter Faraday.default_adapter
+        conn.basic_auth API_USERNAME, API_PASSWORD
+      end
+
+      json_response = connection.get("katello/api/v2/organizations/#{params[:id]}")
+      hash = json_response.body
+      {id: hash['id'],
+       name: hash['name'],
+       title: hash['title'],
+       label: hash['label'],
+       description: hash['description'],
+       owner_details: hash['owner_details'],
+       created_at: hash['created_at'],
+       updated_at: hash['updated_at']
+      }
+    end
+
   end
 end
