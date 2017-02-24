@@ -22,6 +22,7 @@ Rails.application.routes.draw do
         end
         resources :lifecycle_environments, only: [:index, :show, :create]
         resources :hostgroups, only: [:index, :show]
+        resources :domains, only: [:index, :show]
         resources :settings, only: [:index]
 
         resources :discovered_hosts, only: [:index] do
