@@ -1,5 +1,5 @@
 module Fusor::Api::V21
-  module OrganizationsMixin
+  module DomainsMixin
     extend ActiveSupport::Concern
 
     included do
@@ -10,34 +10,34 @@ module Fusor::Api::V21
       SATELLITE_URL = 'http://localhost:9010/'
     end
 
-    def get_organizations
+    def get_domains
       connection = Faraday.new SATELLITE_URL do |conn|
         conn.response :json
         conn.adapter Faraday.default_adapter
         conn.basic_auth API_USERNAME, API_PASSWORD
       end
 
-      json_response = connection.get('katello/api/v2/organizations')
+      json_response = connection.get('api/v2/domains')
       json_response.body["results"]
+
     end
 
-    def get_organization(id)
+    def get_domain(id)
       connection = Faraday.new SATELLITE_URL do |conn|
         conn.response :json
         conn.adapter Faraday.default_adapter
         conn.basic_auth API_USERNAME, API_PASSWORD
       end
 
-      json_response = connection.get("katello/api/v2/organizations/#{params[:id]}")
+      json_response = connection.get("api/v2/domains/#{params[:id]}")
       hash = json_response.body
+
       {id: hash['id'],
        name: hash['name'],
-       title: hash['title'],
-       label: hash['label'],
-       description: hash['description'],
-       owner_details: hash['owner_details'],
+       fullname: hash['fullname'],
+       dns_id: hash['dns_id'],
        created_at: hash['created_at'],
-       updated_at: hash['updated_at']
+       updated_at: hash['updated_at'],
       }
     end
 
