@@ -99,8 +99,6 @@
 class Deployment < ActiveRecord::Base
   validates :name, :presence => true, :uniqueness => {:scope => :organization_id}
 
-  alias_attribute :discovered_host_id, :rhev_engine_host_id
-
   scoped_search :on => [:id, :name, :updated_at], :complete_value => true
   scoped_search :in => :organization, :on => :name, :rename => :organization
   scoped_search :in => :lifecycle_environment, :on => :name, :rename => :lifecycle_environment
@@ -110,9 +108,39 @@ class Deployment < ActiveRecord::Base
   scope :by_id, proc { |n| where(:id => n) if n.present? }
 
   # since there are no has_many relationships
-  attr_accessor :discovered_host_ids,
-                :openshift_host_ids,
+  attr_accessor :openshift_host_ids,
                 :subscription_ids,
-                :introspection_task_ids
+                :introspection_task_ids,
+                :foreman_task_id
+
+  alias_attribute :discovered_host_id, :rhev_engine_host_id
+
+  # if we want to envorce discovered host uniqueness uncomment this line
+  #validates :rhev_engine_host_id, uniqueness: { :message => _('This Host is already an RHV Engine for a different deployment') }
+
+  has_many :deployment_hosts
+
+  has_many :deployment_hypervisor_hosts, -> { where(:deployment_host_type => 'rhev_hypervisor') }, :class_name => "DeploymentHost"
+  has_many :ose_deployment_master_hosts, -> { where(:deployment_host_type => 'ose_master') },      :class_name => "DeploymentHost"
+  has_many :ose_deployment_worker_hosts, -> { where(:deployment_host_type => 'ose_worker') },      :class_name => "DeploymentHost"
+  has_many :ose_deployment_ha_hosts,     -> { where(:deployment_host_type => 'ose_ha') },          :class_name => "DeploymentHost"
+
+  # since can't have has_many :discovered_host, so no model discoverd_hosts,
+  # need to create collection_ids= methods manually
+  def discovered_host_ids
+    @discovered_host_ids ||= self.deployment_hypervisor_hosts.pluck(:discovered_host_id)
+  end
+
+  def discovered_host_ids=(ids = [])
+    # delete rows if array is not empty
+    self.deployment_hypervisor_hosts
+        .where(discovered_host_id: self.discovered_host_ids - ids)
+        .destroy_all
+
+    # add rows if array is not empty
+    (ids - self.discovered_host_ids).each do |id|
+      deployment_hypervisor_hosts.create(discovered_host_id: id)
+    end
+  end
 
 end
