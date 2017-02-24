@@ -1,0 +1,8 @@
+production:
+  satellite_api_username: admin
+  satellite_api_password:  changeme
+  satellite_api_url: https://satellite.fusor.net/
+development:
+  satellite_api_username: admin
+  satellite_api_password:  changeme
+  satellite_api_url: https://satellite.fusor.net/

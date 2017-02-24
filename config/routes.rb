@@ -4,7 +4,7 @@ Rails.application.routes.draw do
     namespace :api do
       namespace :v21 do
 
-        resources :deployments, only: [:index, :show, :update] do
+        resources :deployments, only: [:index, :show, :create, :update] do
           member do
             put :deploy
             put :redeploy

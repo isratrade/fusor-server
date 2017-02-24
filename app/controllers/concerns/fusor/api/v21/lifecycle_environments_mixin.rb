@@ -4,18 +4,10 @@ module Fusor::Api::V21
 
     included do
       include Fusor::Api::V21::AuthenticationMixin
-      API_USERNAME = 'admin'
-      API_PASSWORD = 'secret'
-
-      SATELLITE_URL = 'http://localhost:9010/'
     end
 
     def get_lifecycle_environments
-      connection = Faraday.new SATELLITE_URL do |conn|
-        conn.response :json
-        conn.adapter Faraday.default_adapter
-        conn.basic_auth API_USERNAME, API_PASSWORD
-      end
+      connection = get_sat_connection
 
       # TODO - remove hardcode of ?organization_id=1
       json_response = connection.get('katello/api/v2/environments?organization_id=1')
@@ -31,11 +23,7 @@ module Fusor::Api::V21
     end
 
     def get_lifecycle_environment(id)
-      connection = Faraday.new SATELLITE_URL do |conn|
-        conn.response :json
-        conn.adapter Faraday.default_adapter
-        conn.basic_auth API_USERNAME, API_PASSWORD
-      end
+      connection = get_sat_connection
 
       # TODO - remove hardcode of ?organization_id=1
       json_response = connection.get("katello/api/v2/environments/#{params[:id]}?organization_id=1")

@@ -38,12 +38,6 @@ class Fusor::Api::V21::DeploymentsController < ApplicationController
                               .paginate(:page => params[:page])
     cnt_search = Deployment.search_for(params[:search], :order => params[:order]).count
 
-    connection = Faraday.new SATELLITE_URL do |conn|
-      conn.response :json
-      conn.adapter Faraday.default_adapter
-      conn.basic_auth API_USERNAME, API_PASSWORD
-    end
-
     render json: {deployments: @deployments.as_json(methods: [
                                   :discovered_host_id, :discovered_host_ids
                                   ]),

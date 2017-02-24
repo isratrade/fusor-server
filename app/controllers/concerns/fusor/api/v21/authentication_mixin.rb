@@ -2,12 +2,15 @@ module Fusor::Api::V21
   module AuthenticationMixin
     extend ActiveSupport::Concern
 
-    #included do
-      API_USERNAME = 'admin'
-      API_PASSWORD = 'secret'
-
-      SATELLITE_URL = 'http://localhost:9010/'
-    #end
+    def get_sat_connection
+      Faraday.new Rails.configuration.external_apis['satellite_api_url'] do |conn|
+        conn.response :json
+        conn.ssl.verify = false
+        conn.adapter Faraday.default_adapter
+        conn.basic_auth(Rails.configuration.external_apis['satellite_api_username'],
+                        Rails.configuration.external_apis['satellite_api_password'])
+      end
+    end
 
   end
 end

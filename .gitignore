@@ -17,3 +17,5 @@
 
 # Ignore debugger
 .byebug_history
+
+config/external_apis.yml
