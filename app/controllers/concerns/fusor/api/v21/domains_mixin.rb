@@ -4,31 +4,17 @@ module Fusor::Api::V21
 
     included do
       include Fusor::Api::V21::AuthenticationMixin
-      API_USERNAME = 'admin'
-      API_PASSWORD = 'secret'
-
-      SATELLITE_URL = 'http://localhost:9010/'
     end
 
     def get_domains
-      connection = Faraday.new SATELLITE_URL do |conn|
-        conn.response :json
-        conn.adapter Faraday.default_adapter
-        conn.basic_auth API_USERNAME, API_PASSWORD
-      end
-
+      connection = get_sat_connection
       json_response = connection.get('api/v2/domains')
       json_response.body["results"]
 
     end
 
     def get_domain(id)
-      connection = Faraday.new SATELLITE_URL do |conn|
-        conn.response :json
-        conn.adapter Faraday.default_adapter
-        conn.basic_auth API_USERNAME, API_PASSWORD
-      end
-
+      connection = get_sat_connection
       json_response = connection.get("api/v2/domains/#{params[:id]}")
       hash = json_response.body
 

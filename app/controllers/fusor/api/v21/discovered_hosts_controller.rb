@@ -1,8 +1,7 @@
 class Fusor::Api::V21::DiscoveredHostsController < ApplicationController
 
   include Fusor::Api::V21::DiscoveredHostsMixin
-
-  #include Api::Version21
+  # include Fusor::Api::V21::AuthenticationMixin
 
   def index
     render json: {discovered_hosts: get_discovered_hosts}
@@ -35,12 +34,7 @@ class Fusor::Api::V21::DiscoveredHostsController < ApplicationController
     # # @discovered_host.update_attributes!(:name => params[:discovered_host][:name])
     # # render :json => @discovered_host, :serializer => HostBaseSerializer
 
-    # connection = Faraday.new SATELLITE_URL do |conn|
-    #   conn.response :json
-    #   conn.adapter Faraday.default_adapter
-    #   conn.basic_auth API_USERNAME, API_PASSWORD
-    # end
-
+    # connection = get_sat_connection
     # json_response = connection.patch("api/v2/discovered_hosts/#{params[:id]}")
     # results = json_response.body["results"].first
 
