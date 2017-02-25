@@ -17,13 +17,13 @@ module Fusor
     module CustomerPortal
       class Proxy
         def self.post(path, credentials, body)
-          ::Fusor.log.debug "Sending POST request to Customer Portal: #{path}"
+          #::Fusor.log.debug "Sending POST request to Customer Portal: #{path}"
           client = CustomerPortalResource.rest_client(path, credentials)
           client.post(body, { :accept => :json, :content_type => :json })
         end
 
         def self.delete(path, credentials, body = nil)
-          ::Fusor.log.debug "Sending DELETE request to Customer Portal: #{path}"
+          #::Fusor.log.debug "Sending DELETE request to Customer Portal: #{path}"
           client = CustomerPortalResource.rest_client(path, credentials)
           # Some candlepin calls will set the body in DELETE requests.
           client.options[:payload] = body unless body.nil?
@@ -31,7 +31,7 @@ module Fusor
         end
 
         def self.get(path, credentials)
-          ::Fusor.log.debug "Sending GET request to Customer Portal: #{path}"
+          #::Fusor.log.debug "Sending GET request to Customer Portal: #{path}"
           client = CustomerPortalResource.rest_client(path, credentials)
           client.get({ :accept => :json })
         end
@@ -62,21 +62,24 @@ module Fusor
         end
 
         def self.rest_client(path, credentials)
-          settings = SETTINGS[:fusor][:customer_portal]
-          prefix = (settings && settings[:url]) || "https://subscription.rhn.redhat.com:443/subscription"
+          #TODO - fix and uncomment
+          #settings = SETTINGS[:fusor][:customer_portal]
+          #prefix = (settings && settings[:url]) || "https://subscription.rhn.redhat.com:443/subscription"
+          prefix = "https://subscription.rhn.redhat.com:443/subscription"
 
-          if SETTINGS[:katello][:cdn_proxy] && SETTINGS[:katello][:cdn_proxy][:host]
-            proxy_config = ::Katello.config.cdn_proxy
-            uri = URI('')
+          #TODO - fix and uncomment
+          # if SETTINGS[:katello][:cdn_proxy] && SETTINGS[:katello][:cdn_proxy][:host]
+          #   proxy_config = ::Katello.config.cdn_proxy
+          #   uri = URI('')
 
-            uri.scheme = URI.parse(proxy_config.host).scheme
-            uri.host = URI.parse(proxy_config.host).host
-            uri.port = proxy_config.port
-            uri.user = proxy_config.user
-            uri.password = proxy_config.password
+          #   uri.scheme = URI.parse(proxy_config.host).scheme
+          #   uri.host = URI.parse(proxy_config.host).host
+          #   uri.port = proxy_config.port
+          #   uri.user = proxy_config.user
+          #   uri.password = proxy_config.password
 
-            RestClient.proxy = uri.to_s
-          end
+          #   RestClient.proxy = uri.to_s
+          # end
 
           options = {}
           if credentials[:username] && credentials[:password]
