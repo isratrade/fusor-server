@@ -16,6 +16,7 @@ require "uri"
 require "json"
 require 'fusor/password_filter'
 require 'fusor/deployment_logger'
+require 'open3'
 
 class Fusor::Api::V21::DeploymentsController < ApplicationController
   before_action :set_deployment, only: [:show,
@@ -198,7 +199,7 @@ class Fusor::Api::V21::DeploymentsController < ApplicationController
     @deployment.destroy
   end
 
-  api :PUT, '/deployments/:id/deploy', 'Start a deployment'
+  api :POST, '/deployments/:id/deploy', 'Start a deployment'
   param :id, Integer, desc: 'ID of the deployment'
   def deploy
     begin
@@ -208,36 +209,8 @@ class Fusor::Api::V21::DeploymentsController < ApplicationController
         raise ::ActiveRecord::RecordInvalid.new @deployment
       end
 
-      ::Fusor.log_change_deployment(@deployment)
-
-      # update the provider with the url
-      ::Fusor.log.debug "setting provider url to [#{@deployment.cdn_url}]"
-      provider = @deployment.organization.redhat_provider
-      # just in case save it on the @deployment.org as well
-      @deployment.organization.redhat_provider.repository_url = @deployment.cdn_url
-      provider.repository_url = @deployment.cdn_url
-      provider.save!
-
-      save_deployment_attributes
-
-      manifest_task = sync_task(::Actions::Fusor::Subscription::ManageManifest,
-                                @deployment,
-                                customer_portal_credentials)
-
-      # If the manifest action failed, there is no need to continue with
-      # the deploy actions, since it requires subscriptions & content
-      # both of which are enabled by the manifest.
-      unless manifest_task["result"] == "error"
-        task = async_task(::Actions::Fusor::Deploy,
-                          @deployment,
-                          params[:skip_content])
-        @deployment.foreman_task_uuid = task.id
-        @deployment.save
-      end
-
-      raise "ManageManifest task failed" unless task # Handled by v21
-
-      respond_for_show :resource => @deployment
+      @deployment.delay.execute_ansible_run
+      render json: {}, status: 200
     rescue ::ActiveRecord::RecordInvalid
       render json: {errors: @deployment.errors}, status: 422
     end

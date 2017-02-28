@@ -33,18 +33,21 @@ gem 'will_paginate'
 gem 'apipie-rails'
 gem 'rest-client'
 
-gem "rubyipmi"
-gem "ruby-ip"
-gem "rubyzip"
-gem "net-ssh", '2.9.2' # last ruby 1.9 version
+gem 'rubyipmi'
+gem 'ruby-ip'
+gem 'rubyzip'
+gem 'net-ssh', '2.9.2' # last ruby 1.9 version
 gem 'net-scp'
-gem "sys-filesystem"
+gem 'sys-filesystem'
 gem 'rubocop', '0.33.0'
 gem 'simplecov'
 gem 'coveralls'
-gem "egon"
-gem "fog-core"
-gem "fog-openstack"
+gem 'egon'
+gem 'fog-core'
+gem 'fog-openstack'
+
+gem 'delayed_job_active_record'
+gem 'daemons'
 
 group :development, :test do
   # Call 'byebug' anywhere in the code to stop execution and get a debugger console

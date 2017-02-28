@@ -25,5 +25,6 @@ module FusorServer
     # config.i18n.load_path += Dir[Rails.root.join('my', 'locales', '*.{rb,yml}').to_s]
     # config.i18n.default_locale = :de
     config.external_apis = config_for(:external_apis)
+    config.active_job.queue_adapter = :delayed_job
   end
 end
