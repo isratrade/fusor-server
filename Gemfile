@@ -30,6 +30,19 @@ gem 'faraday_middleware'
 gem 'scoped_search'
 gem 'will_paginate'
 
+gem 'apipie-rails'
+gem 'rest-client'
+
+gem "rubyipmi"
+gem "ruby-ip"
+gem "rubyzip"
+gem "net-ssh", '2.9.2' # last ruby 1.9 version
+gem 'net-scp'
+gem "sys-filesystem"
+gem 'rubocop', '0.33.0'
+gem 'simplecov'
+gem 'coveralls'
+
 group :development, :test do
   # Call 'byebug' anywhere in the code to stop execution and get a debugger console
   gem 'byebug'
