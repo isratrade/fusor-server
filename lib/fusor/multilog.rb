@@ -1,7 +1,7 @@
 require 'logger'
 
 # rubocop:disable Eval
-class MultiLogger
+class Fusor::MultiLog
   attr_reader :logdev
 
   def initialize(logger)

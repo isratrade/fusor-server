@@ -7,7 +7,7 @@ require 'fusor/password_filter'
 # Child of Ruby base logging class. Filters passwords from logs using context
 # provided by a Deployment object.
 #
-class DeploymentLogger < Logger
+class Fusor::DeploymentLogger < Logger
 
   def initialize(*args, deployment)
     super(*args)

@@ -8,7 +8,7 @@ module Fusor
   end
 
   def self.log
-    @log ||= MultiLogger.new(Rails.logger)
+    @log ||= Fusor::MultiLog.new(Rails.logger)
   end
 
   def self.log_change_deployment(deployment = nil)
