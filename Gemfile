@@ -42,6 +42,9 @@ gem "sys-filesystem"
 gem 'rubocop', '0.33.0'
 gem 'simplecov'
 gem 'coveralls'
+gem "egon"
+gem "fog-core"
+gem "fog-openstack"
 
 group :development, :test do
   # Call 'byebug' anywhere in the code to stop execution and get a debugger console
