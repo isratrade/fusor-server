@@ -127,6 +127,12 @@ class Deployment < ActiveRecord::Base
   has_many :ose_deployment_worker_hosts, -> { where(:deployment_host_type => 'ose_worker') },      :class_name => "DeploymentHost"
   has_many :ose_deployment_ha_hosts,     -> { where(:deployment_host_type => 'ose_ha') },          :class_name => "DeploymentHost"
 
+  has_many :deployment_delayed_jobs
+  has_many :delayed_jobs, through: :deployment_delayed_jobs
+
+  before_validation :update_label, on: :create  # we validate on create, so we need to do it before those validations
+  before_save :update_label, on: :update        # but we don't validate on update, so we need to call before_save
+
   # since can't have has_many :discovered_host, so no model discoverd_hosts,
   # need to create collection_ids= methods manually
   def discovered_host_ids
@@ -145,9 +151,11 @@ class Deployment < ActiveRecord::Base
     end
   end
 
+  def update_label
+    self.label = name ? name.downcase.gsub(/[^a-z0-9_]/i, "_") : nil
+  end
+
   def execute_ansible_run
-    self.run_number = run_number + 1
-    self.save!
     package = FusorAnsible::DeploymentAnsiblePackage.new(self)
     package.write
     Open3.capture2e(package.environment, package.command)

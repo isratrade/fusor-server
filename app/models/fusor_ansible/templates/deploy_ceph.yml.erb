@@ -1,0 +1,8 @@
+- hosts: satellite
+  tasks:
+    - name: Deploy Ceph
+      command: echo deploy_ceph
+      register: echo_output
+
+    - debug:
+        var: echo_output

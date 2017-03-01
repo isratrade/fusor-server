@@ -1,0 +1,8 @@
+- hosts: satellite
+  tasks:
+    - name: Deploy OpenStack
+      command: echo deploy_openstack
+      register: echo_output
+
+    - debug:
+        var: echo_output

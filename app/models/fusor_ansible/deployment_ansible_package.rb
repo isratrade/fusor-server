@@ -20,29 +20,19 @@ module FusorAnsible
       @ansible_package_dir = "#{Rails.root}/tmp/ansible-ovirt/#{deployment.label}_#{deployment.id}_#{deployment.run_number}"
       @vault_password = vault_password || SecureRandom.urlsafe_base64
 
-      @vars_file_info = {
-          template_path:  "#{Rails.root}/app/models/fusor_ansible/templates/vars.yml.erb",
-          output_path: File.join(@ansible_package_dir, 'vars.yml')
-      }
+      @vars_file_info = get_file_info('vars.yml')
+      @vault_file_info = get_file_info('vault.yml', true)
+      @hosts_file_info = get_file_info('hosts')
+      @playbook_file_info = get_file_info('deploy.yml')
 
-      @vault_file_info = {
-          template_path:  "#{Rails.root}/app/models/fusor_ansible/templates/vault.yml.erb",
-          output_path: File.join(@ansible_package_dir, 'vault.yml'),
-          encryption_password: @vault_password
-      }
-
-      @hosts_file_info = {
-          template_path:  "#{Rails.root}/app/models/fusor_ansible/templates/hosts.erb",
-          output_path: File.join(@ansible_package_dir, 'hosts')
-      }
-
-      @playbook_file_info = {
-          template_path:  "#{Rails.root}/app/models/fusor_ansible/templates/deploy.yml.erb",
-          output_path: File.join(@ansible_package_dir, 'deploy.yml')
-      }
-
-      # TODO extra files will be added as required by the deployment options
       @files = [@vars_file_info, @vault_file_info, @hosts_file_info, @playbook_file_info]
+      @files << get_file_info('prep_satellite.yml')
+      # @files << get_file_info('deploy_ceph.yml') if deployment.deploy_ceph
+      @files << get_file_info('deploy_rhv.yml') if deployment.deploy_rhev
+      @files << get_file_info('deploy_openstack.yml') if deployment.deploy_openstack
+      @files << get_file_info('deploy_openshift.yml') if deployment.deploy_openshift
+      @files << get_file_info('deploy_cfme_rhv.yml') if deployment.deploy_rhev && deployment.deploy_cfme
+      @files << get_file_info('deploy_cfme_openstack.yml') if deployment.deploy_openstack && deployment.deploy_cfme
     end
 
     def write(directory = nil)
@@ -75,12 +65,22 @@ module FusorAnsible
       FileUtils.cp_r(ROLES_SOURCE, @ansible_package_dir)
     end
 
+    def get_file_info(filename, encrypted = false)
+      file_info = {
+          template_path:  "#{Rails.root}/app/models/fusor_ansible/templates/#{filename}.erb",
+          output_path: File.join(@ansible_package_dir, "#{filename}")
+      }
+
+      file_info['encryption_password'] = @vault_password if encrypted
+      file_info
+    end
+
     def generate_files
       @files.each {|file_info| generate_from_erb(file_info[:template_path], file_info[:output_path], file_info[:encryption_password] )}
     end
 
     def generate_from_erb(template_path, output_path, encryption_password)
-      renderer = ERB.new(File.read(template_path))
+      renderer = ERB.new(File.read(template_path), nil, '%<>')
       output = renderer.result(binding)
 
       file = File.open(output_path, 'w') { |file| file.write(output) }

@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20170228211425) do
+ActiveRecord::Schema.define(version: 20170301184927) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -31,6 +31,17 @@ ActiveRecord::Schema.define(version: 20170228211425) do
   end
 
   add_index "delayed_jobs", ["priority", "run_at"], name: "delayed_jobs_priority", using: :btree
+
+  create_table "deployment_delayed_jobs", force: :cascade do |t|
+    t.integer  "run_number"
+    t.integer  "deployment_id"
+    t.integer  "delayed_job_id"
+    t.datetime "created_at",     null: false
+    t.datetime "updated_at",     null: false
+  end
+
+  add_index "deployment_delayed_jobs", ["delayed_job_id"], name: "index_deployment_delayed_jobs_on_delayed_job_id", using: :btree
+  add_index "deployment_delayed_jobs", ["deployment_id"], name: "index_deployment_delayed_jobs_on_deployment_id", using: :btree
 
   create_table "deployment_hosts", force: :cascade do |t|
     t.integer  "deployment_id",                                    null: false
@@ -123,4 +134,5 @@ ActiveRecord::Schema.define(version: 20170228211425) do
     t.integer  "run_number",                       default: 0,     null: false
   end
 
+  add_foreign_key "deployment_delayed_jobs", "deployments"
 end

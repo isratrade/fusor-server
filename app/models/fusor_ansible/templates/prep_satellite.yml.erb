@@ -1,0 +1,8 @@
+- hosts: satellite
+  tasks:
+    - name: Prep Satellite
+      command: echo prep_satellite
+      register: echo_output
+
+    - debug:
+        var: echo_output

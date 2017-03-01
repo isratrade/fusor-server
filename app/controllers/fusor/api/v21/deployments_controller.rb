@@ -209,8 +209,15 @@ class Fusor::Api::V21::DeploymentsController < ApplicationController
         raise ::ActiveRecord::RecordInvalid.new @deployment
       end
 
-      @deployment.delay.execute_ansible_run
-      render json: {}, status: 200
+      @deployment.run_number += 1
+      @deployment.save!
+      delayed_job = @deployment.delay.execute_ansible_run
+      DeploymentDelayedJob.create({
+                                      run_number: @deployment.run_number,
+                                      deployment_id: @deployment.id,
+                                      delayed_job_id: retval.id
+                                  })
+      render json: {delayed_job: delayed_job}, status: 200
     rescue ::ActiveRecord::RecordInvalid
       render json: {errors: @deployment.errors}, status: 422
     end
