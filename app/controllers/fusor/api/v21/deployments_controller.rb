@@ -215,7 +215,7 @@ class Fusor::Api::V21::DeploymentsController < ApplicationController
       DeploymentDelayedJob.create({
                                       run_number: @deployment.run_number,
                                       deployment_id: @deployment.id,
-                                      delayed_job_id: retval.id
+                                      delayed_job_id: delayed_job.id
                                   })
       render json: {delayed_job: delayed_job}, status: 200
     rescue ::ActiveRecord::RecordInvalid
