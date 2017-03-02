@@ -4,35 +4,15 @@ require 'erb'
 module FusorAnsible
   class DeploymentAnsiblePackage
     ROLES_SOURCE = '/usr/share/fusor-ansible/roles'
+    DEPLOYMENT_BASE_DIR = "#{Rails.root}/tmp/ansible_deployments/"
 
     attr_accessor :vault_password
     attr_reader :ansible_package_dir, :files
 
     def initialize(deployment, vault_password = nil)
-      @satellite_fqdn = Rails.configuration.external_apis['satellite_fqdn']
-      @satellite_domain = Rails.configuration.external_apis['satellite_domain']
-      @satellite_subnet = Rails.configuration.external_apis['satellite_subnet']
-      @satellite_username = Rails.configuration.external_apis['satellite_api_username']
-      @satellite_password = Rails.configuration.external_apis['satellite_api_password']
-
-
-      @deployment = deployment
-      @ansible_package_dir = "#{Rails.root}/tmp/ansible-ovirt/#{deployment.label}_#{deployment.id}_#{deployment.run_number}"
+      @ansible_package_dir = File.join(DEPLOYMENT_BASE_DIR, "#{deployment.id}_#{deployment.label}_#{deployment.run_number}")
       @vault_password = vault_password || SecureRandom.urlsafe_base64
-
-      @vars_file_info = get_file_info('vars.yml')
-      @vault_file_info = get_file_info('vault.yml', true)
-      @hosts_file_info = get_file_info('hosts')
-      @playbook_file_info = get_file_info('deploy.yml')
-
-      @files = [@vars_file_info, @vault_file_info, @hosts_file_info, @playbook_file_info]
-      @files << get_file_info('prep_satellite.yml')
-      # @files << get_file_info('deploy_ceph.yml') if deployment.deploy_ceph
-      @files << get_file_info('deploy_rhv.yml') if deployment.deploy_rhev
-      @files << get_file_info('deploy_openstack.yml') if deployment.deploy_openstack
-      @files << get_file_info('deploy_openshift.yml') if deployment.deploy_openshift
-      @files << get_file_info('deploy_cfme_rhv.yml') if deployment.deploy_rhev && deployment.deploy_cfme
-      @files << get_file_info('deploy_cfme_openstack.yml') if deployment.deploy_openstack && deployment.deploy_cfme
+      init_file_info(deployment)
     end
 
     def write(directory = nil)
@@ -65,10 +45,45 @@ module FusorAnsible
       FileUtils.cp_r(ROLES_SOURCE, @ansible_package_dir)
     end
 
-    def get_file_info(filename, encrypted = false)
+    def init_file_info(deployment)
+      @vars_file_info = get_file_info('vars.yml', ::FusorAnsible::Bindings::VarsBindings.new(deployment).get_binding)
+      @vault_file_info = get_file_info('vault.yml', ::FusorAnsible::Bindings::VaultBindings.new(deployment).get_binding, true)
+      @hosts_file_info = get_file_info('hosts', ::FusorAnsible::Bindings::HostsBindings.new(deployment).get_binding)
+      @playbook_file_info = get_file_info('deploy.yml', ::FusorAnsible::Bindings::DeployBindings.new(deployment).get_binding)
+
+      @files = [@vars_file_info, @vault_file_info, @hosts_file_info, @playbook_file_info]
+      @files << get_file_info('prep_satellite.yml', ::FusorAnsible::Bindings::PrepSatelliteBindings.new(deployment).get_binding)
+
+      # if deployment.deploy_ceph
+      #   @files << get_file_info('deploy_ceph.yml', ::FusorAnsible::Bindings::DeployCephBindings.new(deployment).get_binding)
+      # end
+
+      if deployment.deploy_rhev
+        @files << get_file_info('deploy_rhv.yml', ::FusorAnsible::Bindings::DeployRhvBindings.new(deployment).get_binding)
+      end
+
+      if deployment.deploy_openstack
+        @files << get_file_info('deploy_openstack.yml', ::FusorAnsible::Bindings::DeployOpenstackBindings.new(deployment).get_binding)
+      end
+
+      if deployment.deploy_openshift
+        @files << get_file_info('deploy_openshift.yml', ::FusorAnsible::Bindings::DeployOpenshiftBindings.new(deployment).get_binding)
+      end
+
+      if deployment.deploy_rhev && deployment.deploy_cfme
+        @files << get_file_info('deploy_cfme_rhv.yml', ::FusorAnsible::Bindings::DeployCfmeRhvBindings.new(deployment).get_binding)
+      end
+
+      if deployment.deploy_openstack && deployment.deploy_cfme
+        @files << get_file_info('deploy_cfme_openstack.yml', ::FusorAnsible::Bindings::DeployCfmeOpenstackBindings.new(deployment).get_binding)
+      end
+    end
+    
+    def get_file_info(filename, binding, encrypted = false)
       file_info = {
-          template_path:  "#{Rails.root}/app/models/fusor_ansible/templates/#{filename}.erb",
-          output_path: File.join(@ansible_package_dir, "#{filename}")
+          template_path: "#{Rails.root}/app/models/fusor_ansible/templates/#{filename}.erb",
+          output_path: File.join(@ansible_package_dir, "#{filename}"),
+          binding: binding
       }
 
       file_info['encryption_password'] = @vault_password if encrypted
@@ -76,16 +91,14 @@ module FusorAnsible
     end
 
     def generate_files
-      @files.each {|file_info| generate_from_erb(file_info[:template_path], file_info[:output_path], file_info[:encryption_password] )}
-    end
+      @files.each do |file_info|
+        renderer = ERB.new(File.read(file_info[:template_path]), nil, '%<>')
+        output = renderer.result(file_info[:binding])
 
-    def generate_from_erb(template_path, output_path, encryption_password)
-      renderer = ERB.new(File.read(template_path), nil, '%<>')
-      output = renderer.result(binding)
-
-      file = File.open(output_path, 'w') { |file| file.write(output) }
-      `sshpass -p #{encryption_password} ansible-vault encrypt #{output_path}` if encryption_password
-      file
+        file = File.open(file_info[:output_path], 'w') { |file| file.write(output) }
+        `sshpass -p #{file_info[:encryption_password]} ansible-vault encrypt #{file_info[:output_path]}` if file_info[:encryption_password]
+        file
+      end
     end
   end
 end
