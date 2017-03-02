@@ -6,22 +6,21 @@
 module Utils
   module Fusor
     class CpuCompatDetector
-      def self.rhv_cpu_families(discovered_hosts)
+      def self.rhv_cpu_families(discovered_host_ids)
         # gets cpu families that will be compatible with a rhv hypervisor cluster
         # returns { cpu_families: ['intelX', 'intelZ'], default_family: 'intelX'}
         # requires @deployment to have hypervisor host(s) attached.
-        processors = processor_concat(discovered_hosts)
+        processors = processor_concat(discovered_host_ids)
         return resolve_compatible_cpus(processors)
       end
 
-      def self.processor_concat(discovered_hosts)
+      def self.processor_concat(discovered_host_ids)
         processor_concat = ''
-        host_ids = discovered_hosts.map { |h| h.id }
-        # snippet by jesusr
-        # get fact_values for the 'processors' fact_name, for all hypervisors (discovered_hosts)
-        FactValue.joins(:fact_name).where(:fact_names => { :name => 'processors' }, :host_id => host_ids).each do |procs|
-          processor_concat << (JSON.parse(procs.value.gsub('=>', ':'))["models"].join(' ; ').downcase)
-        end
+
+        # TODO - return this through API v2
+        # FactValue.joins(:fact_name).where(:fact_names => { :name => 'processors' }, :host_id => discovered_host_ids).each do |procs|
+        #   processor_concat << (JSON.parse(procs.value.gsub('=>', ':'))["models"].join(' ; ').downcase)
+        # end
         return processor_concat
       end
 
