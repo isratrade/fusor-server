@@ -23,8 +23,10 @@ Rails.application.routes.draw do
         resources :lifecycle_environments, only: [:index, :show, :create]
         resources :hostgroups, only: [:index, :show]
         resources :domains, only: [:index, :show]
-        resources :settings, only: [:index]
-
+        resources :settings, only: [:index] do
+          get :openshift, :on => :collection
+          get :cloudforms, :on => :collection
+        end
         resources :discovered_hosts, only: [:index] do
           put :rename, :on => :member
         end
