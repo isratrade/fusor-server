@@ -457,3 +457,15 @@
 
   :rhel_guest_image: "/usr/share/rhel-guest-image-7/rhel-guest-image-7.3-32.x86_64.qcow2"
   :puppet_module:
+
+  :defaults:
+    :openshift_master_disk: "30"
+    :openshift_master_ram: "8"
+    :openshift_master_vcpu: "2"
+    :openshift_node_disk: "15"
+    :openshift_node_ram: "8"
+    :openshift_node_vcpu: "1"
+    :cloudforms_db_disk_size: "40"
+    :cloudforms_ram: "8"
+    :cloudforms_vcpu: "4"
+    :cloudforms_vm_disk_size: "40"
