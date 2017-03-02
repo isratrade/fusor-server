@@ -295,8 +295,8 @@ class Fusor::Api::V21::DeploymentsController < ApplicationController
   api :GET, '/deployments/:id/compatible_cpu_families', 'Get a list of compatible CPU families for all selected RHV hypervisor hosts'
   param :id, Integer, required: true, desc: 'ID of the deployment'
   def compatible_cpu_families
-    rhv_hypervisors = @deployment.discovered_hosts
-    cpu_families = Utils::Fusor::CpuCompatDetector.rhv_cpu_families(rhv_hypervisors)
+    rhv_hypervisor_ids = @deployment.discovered_host_ids
+    cpu_families = Utils::Fusor::CpuCompatDetector.rhv_cpu_families(rhv_hypervisor_ids)
     render json: cpu_families, status: 200
   end
 
