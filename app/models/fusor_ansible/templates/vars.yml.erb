@@ -1,5 +1,3 @@
-hello_world_str: "hello world!"
-
 deployment:
   name: <%= @deployment.name%>
   label: <%= @deployment.label%>
@@ -8,41 +6,42 @@ deployment:
   location_name: Default Location
   lifecycle_env: Library
 
+<% if @deployment.deploy_rhev %>
   rhv:
     root_password: "{{vault.deployment.rhv.root_password}}"
     admin_password: "{{vault.deployment.rhv.admin_password}}"
     cluster_name: Default
     config_dir: /etc/qci/
     cpu_model: model_Haswell-noTSX
-    cpu_type: <%= @deployment.rhev_cpu_type%>
+    cpu_type: <%= @deployment.rhev_cpu_type %>
     create_export_domain: <%= @deployment.deploy_cfme && @deployment.cfme_install_loc == 'RHEV'%>
-    data_storage_address: <%= @deployment.rhev_storage_address%>
-    data_storage_name: <%= @deployment.rhev_storage_name%>
-    data_storage_path: <%= @deployment.rhev_share_path%>
+    data_storage_address: <%= @deployment.rhev_storage_address %>
+    data_storage_name: <%= @deployment.rhev_storage_name %>
+    data_storage_path: <%= @deployment.rhev_share_path %>
     dc_name: Default
-#    engine_activation_key: RHV_Engine-rhv-RHV_Engine
+    engine_activation_key: RHV_Engine-<%= @deployment.label %>-RHV_Engine
     engine_db_password: "{{vault.deployment.rhv.engine_db_password}}"
 #    engine_fqdn: mac52540083108d.fusor.net
 #    engine_mac_address: 52:54:00:83:10:8d
-    export_storage_address: <%= @deployment.rhev_export_domain_address%>
-    export_storage_name: <%= @deployment.rhev_export_domain_name%>
-    export_storage_path: <%= @deployment.rhev_export_domain_path%>
+    export_storage_address: <%= @deployment.rhev_export_domain_address %>
+    export_storage_name: <%= @deployment.rhev_export_domain_name %>
+    export_storage_path: <%= @deployment.rhev_export_domain_path %>
 #    gateway: 192.168.241.1
 #    mac_address_range: 00:1A:00:00:00:00,00:1A:00:FF:FF:FF
     mac_pool_name: qci
     satellite_fqdn: <%= @satellite_fqdn %>
 #    storageDatacenterName: hosted_storage
-    storage_type: <%= @deployment.rhev_storage_type%>
+    storage_type: <%= @deployment.rhev_storage_type %>
 #    engines:
 #      - id: 8
 #    hypervisors:
 #      - id: 9
-
+<% end %>
 
 config:
   satellite:
-    admin_user: "{{vault.satellite.admin_user}}"
-    admin_password: "{{vault.satellite.admin_password}}"
+    admin_user: "{{vault.config.satellite.admin_user}}"
+    admin_password: "{{vault.config.satellite.admin_password}}"
     domain_name: <%= @satellite_domain %>
     subnet_name: <%= @satellite_subnet %>
     fqdn: <%= @satellite_fqdn %>
@@ -55,6 +54,7 @@ config:
     puppet_content_view_name: "Fusor Puppet Content"
     hostgroup_name: "Fusor Base"
 
+<% if @deployment.deploy_rhev %>
   rhv:
     medium_os_title: "RedHat 7.3"
     arch_name: "x86_64"
@@ -73,6 +73,7 @@ config:
       - "rhel-7-server-rhv-4-mgmt-agent-rpms"
       - "rhel-7-server-supplementary-rpms"
       - "rhel-7-server-optional-rpms"
+<% end %>
 
 
 fusor_repositories:
@@ -183,6 +184,7 @@ required_repositories:
     full_name: "Red Hat Virtualization 4 Management Agents for RHEL 7 RPMs x86_64 7Server"
 
 host_groups:
+<% if @deployment.deploy_rhev %>
   rhv:
     - name: "RHV-Engine"
       os: "RedHat"
@@ -220,3 +222,4 @@ host_groups:
         content: "rhevsh"
         subscription_descriptions:
           - "Red Hat Cloud Infrastructure"
+<% end %>

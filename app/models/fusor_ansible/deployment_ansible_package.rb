@@ -85,8 +85,7 @@ module FusorAnsible
           output_path: File.join(@ansible_package_dir, "#{filename}"),
           binding: binding
       }
-
-      file_info['encryption_password'] = @vault_password if encrypted
+      file_info[:encryption_password] = @vault_password if encrypted
       file_info
     end
 

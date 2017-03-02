@@ -1,8 +1,61 @@
 - hosts: satellite
-  tasks:
-    - name: Prep Satellite
-      command: echo prep_satellite
-      register: echo_output
+  roles:
+    - role: satellite_product_create
+      user: "{{ config.satellite.admin_user }}"
+      password: "{{ config.satellite.admin_password }}"
+      organization: "{{ config.satellite.default_org_name }}"
+      name: "{{ config.fusor.product_name }}"
 
-    - debug:
-        var: echo_output
+    # cannot loop through roles until Ansible 2.3
+    - role: satellite_repository_create_list
+      user: "{{ config.satellite.admin_user }}"
+      password: "{{ config.satellite.admin_password }}"
+      organization: "{{ config.satellite.default_org_name }}"
+      repositories:  "{{ fusor_repositories }}"
+
+    - role: satellite_content_view_create
+      user: "{{ config.satellite.admin_user }}"
+      password: "{{ config.satellite.admin_password }}"
+      organization: "{{ config.satellite.default_org_name }}"
+      name: "{{config.fusor.puppet_content_view_name}}"
+
+<% if @deployment.enable_access_insights %>
+#     TODO Access Insights
+#    - role: satellite_classes_import_puppet
+#      puppet_classes: "{{ fusor_puppet_classes }}"
+
+<% end %>
+    - role: satellite_content_view_publish
+      user: "{{ config.satellite.admin_user }}"
+      password: "{{ config.satellite.admin_password }}"
+      organization: "{{ config.satellite.default_org_name }}"
+      name: "{{config.fusor.puppet_content_view_name}}"
+      version: 1
+
+    - role: satellite_repository_enable_list
+      user: "{{ config.satellite.admin_user }}"
+      password: "{{ config.satellite.admin_password }}"
+      organization: "{{ config.satellite.default_org_name }}"
+      repositories:  "{{ required_repositories }}"
+
+    - role: satellite_repository_sync_list
+      user: "{{ config.satellite.admin_user }}"
+      password: "{{ config.satellite.admin_password }}"
+      organization: "{{ config.satellite.default_org_name }}"
+      repositories:  "{{ required_repositories }}"
+
+    - role: satellite_hostgroup_create
+      user: "{{ config.satellite.admin_user }}"
+      password: "{{ config.satellite.admin_password }}"
+      organization: "{{ config.satellite.default_org_name }}"
+      name: "{{config.fusor.hostgroup_name}}"
+      title: "{{config.fusor.hostgroup_name}}"
+      domain: "{{config.satellite.domain_name}}"
+      subnet: "{{config.satellite.subnet_name}}"
+
+    - role: satellite_hostgroup_set_parameter
+      user: "{{ config.satellite.admin_user }}"
+      password: "{{ config.satellite.admin_password }}"
+      hostgroup_title: "{{config.fusor.hostgroup_name}}"
+      name: ntp-server
+      value: "{{ config.satellite.fqdn }}"
