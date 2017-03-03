@@ -1,16 +1,4 @@
 ---
-- hosts: satellite
-  tasks:
-    - name: Testing Ansible Sat connection
-      command: ls -alh
-      register: ls_output
-
-    - debug:
-        var: ls_output
-
-    - debug:
-        msg: "Test vault rhv root password: {{deployment.rhv.root_password}}"
-
 - include: prep_satellite.yml
 
 <%#<% if @deployment.deploy_ceph %>
