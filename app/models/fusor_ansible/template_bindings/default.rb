@@ -1,7 +1,6 @@
 module FusorAnsible
-  module Bindings
-    class AnsibleTemplateBindings
-
+  module TemplateBindings
+    class Default
       def initialize(deployment)
         @deployment = deployment
 
@@ -10,7 +9,6 @@ module FusorAnsible
         @satellite_subnet = Rails.configuration.external_apis['satellite_subnet']
         @satellite_username = Rails.configuration.external_apis['satellite_api_username']
         @satellite_password = Rails.configuration.external_apis['satellite_api_password']
-
       end
 
       def get_binding

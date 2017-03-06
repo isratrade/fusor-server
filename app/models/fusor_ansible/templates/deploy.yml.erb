@@ -1,27 +1,30 @@
 ---
-- include: prep_satellite.yml
+- include: satellite_prep.yml
 
 <%#<% if @deployment.deploy_ceph %>
-<%#- include: deploy_ceph.yml %>
+<%#- include: ceph_deploy.yml %>
+
 <%# %>
 <%#<% end %>
 <% if @deployment.deploy_rhev %>
-- include: deploy_rhv.yml
+- include: rhv_pre.yml
+- include: rhv_deploy.yml
+- include: rhv_post.yml
 
 <% end %>
 <% if @deployment.deploy_openstack %>
-- include: deploy_openstack.yml
+- include: openstack_deploy.yml
 
 <% end %>
 <% if @deployment.deploy_openshift %>
-- include: deploy_openshift.yml
+- include: openshift_deploy.yml
 
 <% end %>
 <% if @deployment.deploy_rhev && @deployment.deploy_cfme %>
-- include: deploy_cfme_rhv.yml
+- include: cfme_rhv_deploy.yml
 
 <% end %>
 <% if @deployment.deploy_openstack && @deployment.deploy_cfme %>
-- include: deploy_cfme_openstack.yml
+- include: cfme_openstack_deploy.yml
 
 <% end %>

@@ -1,0 +1,8 @@
+- hosts: satellite
+  tasks:
+    - name: Post-Deploy RHV
+      command: echo rhv_post
+      register: echo_output
+
+    - debug:
+        var: echo_output
