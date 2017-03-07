@@ -20,11 +20,11 @@ module Fusor
       end
 
       def add_product_ids(product, ids)
-        ::Fusor.log.debug "SUB-INFO: #{@name} adding product [#{product}] ids: [#{ids}]"
+        Rails.logger.debug "SUB-INFO: #{@name} adding product [#{product}] ids: [#{ids}]"
         @product_ids[product] = [] if !@product_ids.key?(product)
         @product_ids[product].concat ids
         @product_ids[product].uniq! # remove duplicates, the ! operates on the actual array
-        ::Fusor.log.debug "SUB-INFO: after addition to [#{product}] this is what we have: #{@product_ids[product]}"
+        Rails.logger.debug "SUB-INFO: after addition to [#{product}] this is what we have: #{@product_ids[product]}"
       end
 
       def get_product_ids
@@ -32,7 +32,7 @@ module Fusor
       end
 
       def get_product_keys(pids)
-        ::Fusor.log.debug "SUB-INFO: #{@name}.get_product_key: pids: #{pids}"
+        Rails.logger.debug "SUB-INFO: #{@name}.get_product_key: pids: #{pids}"
         # if pids - values is empty we found our best match
         # otherwise if any of the items matched add the key to the list
         # skip if pids - values == pids
@@ -55,7 +55,7 @@ module Fusor
       end
 
       def get_product_ids_by_name(product)
-        ::Fusor.log.debug "SUB-INFO: #{@name}.get_product_ids_by_name:  product: #{product} values: #{@product_ids[product]}"
+        Rails.logger.debug "SUB-INFO: #{@name}.get_product_ids_by_name:  product: #{product} values: #{@product_ids[product]}"
         return @product_ids[product]
       end
 
@@ -66,7 +66,7 @@ module Fusor
       def update_counts(product, count)
         @counts[product] = 0 if !@counts.key?(product)
         @counts[product] += count if !count.nil?
-        ::Fusor.log.debug "SUB-INFO: product #{product} incremented by #{count} for a quantity #{@counts[product]}"
+        Rails.logger.debug "SUB-INFO: product #{product} incremented by #{count} for a quantity #{@counts[product]}"
       end
 
       def get_counts
@@ -74,7 +74,7 @@ module Fusor
       end
 
       def get_counts_by_name(product)
-        ::Fusor.log.debug "SUB-INFO: getting counts for #{product}"
+        Rails.logger.debug "SUB-INFO: getting counts for #{product}"
         return @counts[product]
       end
 

@@ -21,18 +21,18 @@ module Fusor
       #
 
       def validate(deployment, session, manifest_imported = false, disconnected = false)
-        ::Fusor.log.debug "SUB-VAL.validate: Entering SubscriptionValidator.validate"
+        Rails.logger.debug "SUB-VAL.validate: Entering SubscriptionValidator.validate"
         valid = false
         deployment_subinfo = build_subinfo_from_deployment(deployment)
 
         if !manifest_imported && disconnected
           # new disconnected
-          ::Fusor.log.info "SUB-VAL.validate: DISCONNECTED! with no existing manifest"
+          Rails.logger.info "SUB-VAL.validate: DISCONNECTED! with no existing manifest"
           manifest_subinfo = build_subinfo_from_manifest(deployment)
           valid = compare(deployment_subinfo, manifest_subinfo)
         elsif !manifest_imported && !disconnected
           # new connected
-          ::Fusor.log.info "SUB-VAL.validate: CONNECTED! with no existing manifest"
+          Rails.logger.info "SUB-VAL.validate: CONNECTED! with no existing manifest"
           unless (session[:portal_username] && session[:portal_password])
             ::Fusor.log.error "SUB-VAL: missing portal credentials"
             fail ::Katello::HttpErrors::BadRequest, _("Customer portal credentials are required.  Please provide them using login.")
@@ -43,14 +43,14 @@ module Fusor
           valid = compare(deployment_subinfo, portal_subinfo)
         elsif manifest_imported
           # new with existing manifest
-          ::Fusor.log.info "SUB-VAL.validate: EXISTING MANIFEST! Subsequent deployment"
+          Rails.logger.info "SUB-VAL.validate: EXISTING MANIFEST! Subsequent deployment"
           satellite_subinfo = build_subinfo_from_satellite(deployment.label)
           valid = compare(deployment_subinfo, satellite_subinfo)
         else
-          ::Fusor.log.error "SUB-VAL.validate: DANGER WILL ROBINSON! We shouldn't be here!"
+          Rails.logger.error "SUB-VAL.validate: DANGER WILL ROBINSON! We shouldn't be here!"
         end
 
-        ::Fusor.log.debug "SUB-VAL.validate: Leaving SubscriptionValidator.validate returning, valid is #{valid}"
+        Rails.logger.debug "SUB-VAL.validate: Leaving SubscriptionValidator.validate returning, valid is #{valid}"
         return valid
       end
 
@@ -67,30 +67,30 @@ module Fusor
         # validate product ids first
         valid = products_covered?(deployment_si.flatten_product_ids, other_si.flatten_product_ids)
         if valid
-          ::Fusor.log.info "SUB-VAL.compare: products are covered, validating counts now"
+          Rails.logger.info "SUB-VAL.compare: products are covered, validating counts now"
           # only check the counts if all the products are covered
           deployment_si.get_counts.each do |product, count|
-            ::Fusor.log.info "SUB-VAL.compare: deployment has product: #{product} with count: #{count}"
-            ::Fusor.log.info "SUB-VAL.compare: #{deployment_si.get_product_ids_by_name(product)}"
+            Rails.logger.info "SUB-VAL.compare: deployment has product: #{product} with count: #{count}"
+            Rails.logger.info "SUB-VAL.compare: #{deployment_si.get_product_ids_by_name(product)}"
 
             # get the set of keys that encompass the counts
             # for each of the keys, get their count
             # each count has to be >= to the count we need
             keys = other_si.get_product_keys(deployment_si.get_product_ids_by_name(product))
             if keys.empty?
-              ::Fusor.log.error "SUB-VAL.compare: COULD NOT FIND any keys for product [#{product}]. #{deployment_si.get_product_ids_by_name(product)}"
+              Rails.logger.error "SUB-VAL.compare: COULD NOT FIND any keys for product [#{product}]. #{deployment_si.get_product_ids_by_name(product)}"
             end
 
             dep_count = deployment_si.get_counts_by_name(product)
             keys.each do |key|
               count = other_si.get_counts_by_name(key)
               valid &&= (dep_count <= count)  # valid = valid && (dep_count <= count)
-              ::Fusor.log.info "SUB-VAL.compare: deployment needs #{dep_count}. subscriptions supply #{count}. Valid? #{valid}"
+              Rails.logger.info "SUB-VAL.compare: deployment needs #{dep_count}. subscriptions supply #{count}. Valid? #{valid}"
             end
           end
         end
 
-        ::Fusor.log.debug "SUB-VAL.compare: Returning valid? #{valid}"
+        Rails.logger.debug "SUB-VAL.compare: Returning valid? #{valid}"
         return valid
       end
 
@@ -147,7 +147,7 @@ module Fusor
         # some to account for those.
         # We only want subscriptions for this deployment which were added
         # and have an actual quantity to add.
-        added_subscriptions = Fusor::Subscription.where(:deployment_id => id).where(:source => 'added').where('quantity_to_add > 0')
+        added_subscriptions = Subscription.where(:deployment_id => id).where(:source => 'added').where('quantity_to_add > 0')
 
         # if we have added some subscriptions, let's see if we need to add
         # their product ids as well
@@ -160,20 +160,21 @@ module Fusor
           subinfo.add_product_ids(s.product_name, all_subs[s.product_name])
         end
 
-        ::Fusor.log.info "SUB-VAL.build-si-portal: built subscription info from portal. #{subinfo.inspect}"
+        Rails.logger.info "SUB-VAL.build-si-portal: built subscription info from portal. #{subinfo.inspect}"
         return subinfo
       end
 
       def build_subinfo_from_satellite(label)
         subinfo = Fusor::Subscriptions::SubscriptionInfo.new("satellite-" + label)
-        subs = ::Katello::Subscription.where.not(name: "Fusor")
+        # TODO - get from Katello API v2
+        subs = [] #::Katello::Subscription.where.not(name: "Fusor")
         subs.each do |sub|
           sub.pools.each do |p|
             subinfo.update_counts(sub.name, p.quantity)
           end
           subinfo.add_product_ids(sub.name, sub.products.map { |p| p.cp_id })
         end
-        ::Fusor.log.info "SUB-VAL.build-si-sat: built subscription info from satellite. #{subinfo.inspect}"
+        Rails.logger.info "SUB-VAL.build-si-sat: built subscription info from satellite. #{subinfo.inspect}"
         return subinfo
       end
 
@@ -186,7 +187,7 @@ module Fusor
           pids = sub['pool']['providedProducts'].map { |p| p['productId'] }.uniq
           subinfo.add_product_ids(sub['pool']['productName'], pids)
         end
-        ::Fusor.log.info "SUB-VAL.build-si-man: built subscription info from manifest. #{subinfo.inspect}"
+        Rails.logger.info "SUB-VAL.build-si-man: built subscription info from manifest. #{subinfo.inspect}"
         return subinfo
       end
 
@@ -214,17 +215,17 @@ module Fusor
           subinfo.update_counts(:openstack, openstack.overcloud_object_storage_count)
         end
 
-        ::Fusor.log.debug "SUB-VAL.build-si-dep: deploy_rhv: #{deployment.deploy_rhev}"
-        ::Fusor.log.debug "SUB-VAL.build-si-dep: deploy_cfme: #{deployment.deploy_cfme}"
-        ::Fusor.log.debug "SUB-VAL.build-si-dep: deploy_openshift: #{deployment.deploy_openshift}"
-        ::Fusor.log.debug "SUB-VAL.build-si-dep: deploy_openstack: #{deployment.deploy_openstack}"
+        Rails.logger.debug "SUB-VAL.build-si-dep: deploy_rhv: #{deployment.deploy_rhev}"
+        Rails.logger.debug "SUB-VAL.build-si-dep: deploy_cfme: #{deployment.deploy_cfme}"
+        Rails.logger.debug "SUB-VAL.build-si-dep: deploy_openshift: #{deployment.deploy_openshift}"
+        Rails.logger.debug "SUB-VAL.build-si-dep: deploy_openstack: #{deployment.deploy_openstack}"
 
         subinfo.add_product_ids(:rhev, get_product_ids_from_config(/rhev/)) if deployment.deploy_rhev
         subinfo.add_product_ids(:cloudforms, get_product_ids_from_config(/cloudforms/)) if deployment.deploy_cfme
         subinfo.add_product_ids(:openshift, get_product_ids_from_config(/openshift/)) if deployment.deploy_openshift
         subinfo.add_product_ids(:openstack, get_product_ids_from_config(/openstack/)) if deployment.deploy_openstack
 
-        ::Fusor.log.info "SUB-VAL.build-si-dep: built subscription info from deployment. #{subinfo.inspect}"
+        Rails.logger.info "SUB-VAL.build-si-dep: built subscription info from deployment. #{subinfo.inspect}"
         return subinfo
       end
 

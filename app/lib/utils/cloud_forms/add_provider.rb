@@ -18,7 +18,7 @@ module Utils
   module CloudForms
     class AddProvider
       def self.add(cfme_ip, provider_params, deployment, url_params = "")
-        ::Fusor.log.debug "Adding the provider at #{provider_params[:ip]} to the CloudForms VM at #{cfme_ip}"
+        Rails.logger.debug "Adding the provider at #{provider_params[:ip]} to the CloudForms VM at #{cfme_ip}"
 
         data = {
           :action => "create",

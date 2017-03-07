@@ -230,7 +230,7 @@ class Fusor::Api::V21::DeploymentsController < ApplicationController
       if @deployment.invalid?
         raise ::ActiveRecord::RecordInvalid.new @deployment
       end
-      ::Fusor.log.warn "Attempting to redeploy deployment with id [ #{@deployment.id} ]"
+      Rails.logger.warn "Attempting to redeploy deployment with id [ #{@deployment.id} ]"
       new_deploy_task = async_task(::Actions::Fusor::Deploy, @deployment)
       respond_for_async :resource => new_deploy_task
     rescue ::ActiveRecord::RecordInvalid
@@ -445,9 +445,9 @@ class Fusor::Api::V21::DeploymentsController < ApplicationController
   end
 
   def save_deployment_attributes
-    Fusor.log.info "====== Saving Deployment Atrributes ======"
+    Rails.logger.info "====== Saving Deployment Atrributes ======"
 
-    path = ::Fusor.log_file_dir(@deployment.label, @deployment.id)
+    path = Rails.logger_file_dir(@deployment.label, @deployment.id)
     FileUtils.mkdir_p tmp_dir if !File.directory?(path)
 
     dep_text = JSON.pretty_generate(@deployment.serializable_hash)
@@ -467,11 +467,11 @@ class Fusor::Api::V21::DeploymentsController < ApplicationController
     PasswordFilter.extract_deployment_passwords(@deployment)
     text = PasswordFilter.filter_passwords(text)
 
-    Fusor.log.info "====== '#{file}' ====== \n #{text}"
+    Rails.logger.info "====== '#{file}' ====== \n #{text}"
     begin
       File.write(file, text)
     rescue
-      Fusor.log.error "Failed to write file : '#{file}'!"
+      Rails.logger.error "Failed to write file : '#{file}'!"
     end
   end
 
@@ -499,7 +499,7 @@ class Fusor::Api::V21::DeploymentsController < ApplicationController
   end
 
   def get_log_path(log_type_param)
-    dir = ::Fusor.log_file_dir(@deployment.label, @deployment.id)
+    dir = Rails.logger_file_dir(@deployment.label, @deployment.id)
     case log_type_param
       when 'messages_log'
         File.join(dir, 'var/log/messages')
@@ -512,7 +512,7 @@ class Fusor::Api::V21::DeploymentsController < ApplicationController
       when 'ansible_log'
         File.join(dir, 'ansible.log')
       else
-        ::Fusor.log_file_path(@deployment.label, @deployment.id)
+        Rails.logger_file_path(@deployment.label, @deployment.id)
     end
   end
 

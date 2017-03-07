@@ -53,15 +53,15 @@ module Utils
       def create_compute_profile(pname)
         ret = ComputeProfile.find_by_name(pname)
         if !ret.nil?
-          ::Fusor.log.info "====== ComputeProfile with name '#{pname}' already exists!"
+          Rails.logger.info "====== ComputeProfile with name '#{pname}' already exists!"
           return ret
         end
 
         begin
           ComputeProfile.create!("name" => pname)
         rescue Exception => e
-          ::Fusor.log.error "Failed to create compute profile!"
-          ::Fusor.log.error "#{e.message} \n #{e.backtrace}"
+          Rails.logger.error "Failed to create compute profile!"
+          Rails.logger.error "#{e.message} \n #{e.backtrace}"
           return nil
         end
       end
@@ -117,8 +117,8 @@ module Utils
                          }.with_indifferent_access
                        }.with_indifferent_access
         rescue Exception => e
-          ::Fusor.log.error "Failed to set RHV attributes!"
-          ::Fusor.log.error "#{e.message} \n #{e.backtrace}"
+          Rails.logger.error "Failed to set RHV attributes!"
+          Rails.logger.error "#{e.message} \n #{e.backtrace}"
           return nil
         end
       end
@@ -152,14 +152,14 @@ module Utils
                         }.with_indifferent_access
                        }.with_indifferent_access
         rescue Exception => e
-          ::Fusor.log.error "Failed to set OSP attributes!"
-          ::Fusor.log.error "#{e.message} \n #{e.backtrace}"
+          Rails.logger.error "Failed to set OSP attributes!"
+          Rails.logger.error "#{e.message} \n #{e.backtrace}"
           return nil
         end
       end
 
       def set_common_host_attrs
-        ::Fusor.log.debug "====== setting common host attributes ======"
+        Rails.logger.debug "====== setting common host attributes ======"
         @host_attrs = {"name" => @host_name,
                        "location_id" => Location.find_by_name('Default Location').id,
                        "environment_id" => Environment.where(:name => "production").first.id,
@@ -177,7 +177,7 @@ module Utils
 
       def set_rhev_host_attrs(attrs)
         set_common_host_attrs
-        ::Fusor.log.debug "====== setting RHV specific host attributes ======"
+        Rails.logger.debug "====== setting RHV specific host attributes ======"
         cl_id  = @cr.clusters.find { |c| c.name == @deployment.rhev_cluster_name }.id
         net_id = @cr.available_networks(cl_id).first.id
         @host_attrs["ptable_id"] = Ptable.find { |p| p["name"] == @ptable_name }.id
@@ -228,7 +228,7 @@ module Utils
 
       def set_osp_host_attrs
         set_common_host_attrs
-        ::Fusor.log.debug "====== setting OpenShift specific host attributes ======"
+        Rails.logger.debug "====== setting OpenShift specific host attributes ======"
         @host_attrs["build"] = 1
         @host_attrs["provision_method"] = "image"
         @host_attrs["is_owned_by"] = "3-Users"
@@ -247,31 +247,31 @@ module Utils
       end
 
       def create_compute_attribute(attrs)
-        ::Fusor.log.debug "====== creating compute attributes ======"
+        Rails.logger.debug "====== creating compute attributes ======"
         begin
           ComputeAttribute.create(attrs)
         rescue Exception => e
-          ::Fusor.log.error "Failed to create compute attributes!"
-          ::Fusor.log.error "#{e.message} \n #{e.backtrace}"
+          Rails.logger.error "Failed to create compute attributes!"
+          Rails.logger.error "#{e.message} \n #{e.backtrace}"
           return nil
         end
       end
 
       def launch_vm
-        ::Fusor.log.debug "====== launching VM ======"
+        Rails.logger.debug "====== launching VM ======"
         begin
           host = ::Host.create!(@host_attrs)
           if host.errors.empty?
-            ::Fusor.log.info "VMLauncher: Launch VM Completed for '#{@host_name}'"
+            Rails.logger.info "VMLauncher: Launch VM Completed for '#{@host_name}'"
             return host
           else
-            ::Fusor.log.error "VMLauncher: Launch VM for '#{@host_name}' FAILED "
-            ::Fusor.log.error "#{host.errors}"
+            Rails.logger.error "VMLauncher: Launch VM for '#{@host_name}' FAILED "
+            Rails.logger.error "#{host.errors}"
             return nil
           end
         rescue Exception => e
-          ::Fusor.log.error "Failed to launch VM!"
-          ::Fusor.log.error "#{e.message} \n #{e.backtrace}"
+          Rails.logger.error "Failed to launch VM!"
+          Rails.logger.error "#{e.message} \n #{e.backtrace}"
           return nil
         end
       end

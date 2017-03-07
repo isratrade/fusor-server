@@ -31,13 +31,13 @@ module Utils
         end
 
         if status.nil? || status > 0
-          ::Fusor.log.error "Error running command: #{cmd_filtered}"
-          ::Fusor.log.error "Status code: #{status}"
-          ::Fusor.log.error "Command output: #{output_filtered}"
+          Rails.logger.error "Error running command: #{cmd_filtered}"
+          Rails.logger.error "Status code: #{status}"
+          Rails.logger.error "Command output: #{output_filtered}"
         elsif log_on_success
-          ::Fusor.log.info "Command: #{cmd_filtered}"
-          ::Fusor.log.info "Status code: #{status}"
-          ::Fusor.log.info "Command output: #{output_filtered}"
+          Rails.logger.info "Command: #{cmd_filtered}"
+          Rails.logger.info "Status code: #{status}"
+          Rails.logger.info "Command output: #{output_filtered}"
         end
 
         return status, output
