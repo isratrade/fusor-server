@@ -2,7 +2,6 @@ class CreateDeployments < ActiveRecord::Migration
   def change
     create_table :deployments do |t|
       t.string :name
-      t.string "name"#, null: false
       t.integer "lifecycle_environment_id"
       t.integer "organization_id"#,null: false
       t.boolean "deploy_rhev", default: false

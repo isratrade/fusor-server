@@ -17,13 +17,13 @@ module Fusor
     module CustomerPortal
       class Proxy
         def self.post(path, credentials, body)
-          #::Fusor.log.debug "Sending POST request to Customer Portal: #{path}"
+          Rails.logger.debug "Sending POST request to Customer Portal: #{path}"
           client = CustomerPortalResource.rest_client(path, credentials)
           client.post(body, { :accept => :json, :content_type => :json })
         end
 
         def self.delete(path, credentials, body = nil)
-          #::Fusor.log.debug "Sending DELETE request to Customer Portal: #{path}"
+          Rails.logger.debug "Sending DELETE request to Customer Portal: #{path}"
           client = CustomerPortalResource.rest_client(path, credentials)
           # Some candlepin calls will set the body in DELETE requests.
           client.options[:payload] = body unless body.nil?
@@ -31,7 +31,7 @@ module Fusor
         end
 
         def self.get(path, credentials)
-          #::Fusor.log.debug "Sending GET request to Customer Portal: #{path}"
+          Rails.logger.debug "Sending GET request to Customer Portal: #{path}"
           client = CustomerPortalResource.rest_client(path, credentials)
           client.get({ :accept => :json })
         end
@@ -80,7 +80,8 @@ module Fusor
 
           #   RestClient.proxy = uri.to_s
           # end
-
+          Rails.logger.info "-------------self.rest_client----------"
+          Rails.logger.info "credentials is #{credentials}"
           options = {}
           if credentials[:username] && credentials[:password]
             options[:headers] = self.default_headers
@@ -92,7 +93,9 @@ module Fusor
             options[:ssl_client_key] = OpenSSL::PKey::RSA.new(credentials[:client_key])
             options[:verify_ssl] = OpenSSL::SSL::VERIFY_NONE
           end
-
+          Rails.logger.info '-----------------'
+          Rails.logger.info prefix + path
+          Rails.logger.info '-----------------'
           RestClient::Resource.new(prefix + path, options)
         end
       end

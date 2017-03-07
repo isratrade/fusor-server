@@ -12,7 +12,7 @@ module Utils
 
       def create_snippet(name)
         if !ProvisioningTemplate.find_by_name(name).nil?
-          ::Fusor.log.error "====== Snippet '#{name}' already exists! ======"
+          Rails.logger.error "====== Snippet '#{name}' already exists! ======"
           return nil
         end
         new_snippet = ProvisioningTemplate.create
@@ -26,7 +26,7 @@ module Utils
 
       def ensure_snippet(name)
         if !ProvisioningTemplate.find_by_name(name).nil?
-          ::Fusor.log.debug "====== Snippet '#{name}' already exists! ======"
+          Rails.logger.debug "====== Snippet '#{name}' already exists! ======"
           return true
         end
 
@@ -34,21 +34,21 @@ module Utils
         if name.eql? @rhevm_guest_agent_snippet_name
           create_rhevm_guest_agent_snippet
         else
-          ::Fusor.log.error "====== Unsupported custom snippet '#{name}'.  Cannot ensure snippet. ======"
+          Rails.logger.error "====== Unsupported custom snippet '#{name}'.  Cannot ensure snippet. ======"
           return nil
         end
       end
 
       def ensure_kickstart(name)
         if !ProvisioningTemplate.find_by_name(name).nil?
-          ::Fusor.log.debug "====== Template '#{name}' already exists! ======"
+          Rails.logger.debug "====== Template '#{name}' already exists! ======"
           return true
         end
 
         default_template_name = 'Satellite Kickstart Default'
         default_template = ProvisioningTemplate.find_by_name(default_template_name)
         if default_template.nil?
-          ::Fusor.log.error "====== Template '#{default_template_name}' does not exist! Cannot dup from default! ======"
+          Rails.logger.error "====== Template '#{default_template_name}' does not exist! Cannot dup from default! ======"
           return nil
         end
         new_template = default_template.dup
@@ -71,7 +71,7 @@ module Utils
       def append(name, text)
         template = ProvisioningTemplate.find_by_name(name)
         if template.nil? || text.nil?
-          ::Fusor.log.error "====== Input params is nil! Cannot append. ======"
+          Rails.logger.error "====== Input params is nil! Cannot append. ======"
           return nil
         end
         str = template.template.clone
@@ -83,12 +83,12 @@ module Utils
       def update(name, replacement_text, search_text)
         template = ProvisioningTemplate.find_by_name(name)
         if template.nil? || replacement_text.nil? || search_text.nil?
-          ::Fusor.log.error "====== Input params is nil! Cannot update ======"
+          Rails.logger.error "====== Input params is nil! Cannot update ======"
           return nil
         end
 
         if !template.template.include?(search_text)
-          ::Fusor.log.error "====== Search text '#{search_text}' does not exist in the template! Cannot update ======"
+          Rails.logger.error "====== Search text '#{search_text}' does not exist in the template! Cannot update ======"
           return nil
         end
         str = template.template.clone
@@ -107,7 +107,7 @@ module Utils
 
         ks = ProvisioningTemplate.find_by_name(ks_name)
         if ks.template.include?(snippet_include_line)
-          ::Fusor.log.debug "====== Snippet '#{snippet_name}' already in the KS '#{ks_name}'.  Nothing to do. ======"
+          Rails.logger.debug "====== Snippet '#{snippet_name}' already in the KS '#{ks_name}'.  Nothing to do. ======"
           return true
         end
         replacement_text = snippet_include_line + search_text
