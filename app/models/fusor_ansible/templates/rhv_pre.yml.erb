@@ -1,0 +1,79 @@
+---
+- hosts: satellite
+  roles:
+    - role: satellite_hostgroup_create
+      user: "{{ config.satellite.admin_user }}"
+      password: "{{ config.satellite.admin_password }}"
+      organization: "{{ config.satellite.default_org_name }}"
+      name: "{{ deployment.label }}"
+      title: "{{ config.fusor.hostgroup_name }}/{{ deployment.label }}"
+      parent_title: "{{ config.fusor.hostgroup_name }}"
+      lifecycle_environment: "{{ deployment.lifecycle_env }}"
+      content_view: "{{ config.satellite.default_org_content_view }}"
+      proxy: "{{ config.satellite.fqdn }}"
+
+    - role: satellite_hostgroup_create
+      user: "{{ config.satellite.admin_user }}"
+      password: "{{ config.satellite.admin_password }}"
+      organization: "{{ config.satellite.default_org_name }}"
+      name: "RHV-Engine"
+      title: "{{ config.fusor.hostgroup_name }}/{{ deployment.label }}/RHV-Engine"
+      parent_title: "{{ config.fusor.hostgroup_name }}/{{ deployment.label }}"
+      lifecycle_environment: "{{ deployment.lifecycle_env }}"
+      content_view: "{{ config.satellite.default_org_content_view }}"
+      architecture: "{{ config.rhv.arch_name }}"
+      operating_system: "{{ config.rhv.os_title }}"
+      partition_table: "{{ config.rhv.partition_table_name }}"
+      root_pass: "{{ deployment.rhv.root_password }}"
+      locations: "{{ config.satellite.default_location_name }}"
+
+    - role: satellite_activation_key_create
+      user: "{{ config.satellite.admin_user }}"
+      password: "{{ config.satellite.admin_password }}"
+      organization: "{{ config.satellite.default_org_name }}"
+      name: "RHV_Engine-{{ deployment.label }}-RHV_Engine"
+      lifecycle_environment: "{{ deployment.lifecycle_env }}"
+      content_view: "{{ config.satellite.default_org_content_view }}"
+
+    - role: satellite_hostgroup_set_parameter
+      user: "{{ config.satellite.admin_user }}"
+      password: "{{ config.satellite.admin_password }}"
+      hostgroup_title: "{{ config.fusor.hostgroup_name }}/{{ deployment.label }}/RHV-Engine"
+      name: "kt_activation_keys"
+      value: "RHV_Engine-{{ deployment.label }}-RHV_Engine"
+
+    - role: satellite_hostgroup_create
+      user: "{{ config.satellite.admin_user }}"
+      password: "{{ config.satellite.admin_password }}"
+      organization: "{{ config.satellite.default_org_name }}"
+      name: "RHV-Hypervisor"
+      title: "{{ config.fusor.hostgroup_name }}/{{ deployment.label }}/RHV-Hypervisor"
+      parent_title: "{{ config.fusor.hostgroup_name }}/{{ deployment.label }}"
+      lifecycle_environment: "{{ deployment.lifecycle_env }}"
+      content_view: "{{ config.satellite.default_org_content_view }}"
+      architecture: "{{ config.rhv.arch_name }}"
+      operating_system: "{{ config.rhv.os_title }}"
+      partition_table: "{{ config.rhv.partition_table_name }}"
+      root_pass: "{{ deployment.rhv.root_password }}"
+      locations: "{{ config.satellite.default_location_name }}"
+
+    - role: satellite_activation_key_create
+      user: "{{ config.satellite.admin_user }}"
+      password: "{{ config.satellite.admin_password }}"
+      organization: "{{ config.satellite.default_org_name }}"
+      name: "RHV_Hypervisor-{{deployment.label}}-RHV_Hypervisor"
+      lifecycle_environment: "{{ deployment.lifecycle_env }}"
+      content_view: "{{ config.satellite.default_org_content_view }}"
+
+    - role: satellite_hostgroup_set_parameter
+      user: "{{ config.satellite.admin_user }}"
+      password: "{{ config.satellite.admin_password }}"
+      hostgroup_title: "{{ config.fusor.hostgroup_name }}/{{ deployment.label }}/RHV-Hypervisor"
+      name: "kt_activation_keys"
+      value: "RHV_Hypervisor-{{deployment.label}}-RHV_Hypervisor"
+
+    - role: satellite_discovery_provision_list
+      user: "{{ config.satellite.admin_user }}"
+      password: "{{ config.satellite.admin_password }}"
+      discovered_hosts: "{{ deployment.rhv.engines + deployment.rhv.hypervisors }}"
+

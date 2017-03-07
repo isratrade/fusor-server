@@ -10,15 +10,15 @@ deployment:
   rhv:
     root_password: "{{vault.deployment.rhv.root_password}}"
     admin_password: "{{vault.deployment.rhv.admin_password}}"
-    cluster_name: Default
-    config_dir: /etc/qci/
-    cpu_model: model_Haswell-noTSX
+    cluster_name: <%= @deployment.rhev_cluster_name %>
+#    config_dir: /etc/qci/
+#    cpu_model: model_Haswell-noTSX
     cpu_type: <%= @deployment.rhev_cpu_type %>
     create_export_domain: <%= @deployment.deploy_cfme && @deployment.cfme_install_loc == 'RHEV'%>
     data_storage_address: <%= @deployment.rhev_storage_address %>
     data_storage_name: <%= @deployment.rhev_storage_name %>
     data_storage_path: <%= @deployment.rhev_share_path %>
-    dc_name: Default
+    data_center_name: <%= @deployment.rhev_data_center_name %>
     engine_activation_key: RHV_Engine-<%= @deployment.label %>-RHV_Engine
     engine_db_password: "{{vault.deployment.rhv.engine_db_password}}"
 #    engine_fqdn: mac52540083108d.fusor.net
@@ -32,10 +32,19 @@ deployment:
     satellite_fqdn: <%= @satellite_fqdn %>
 #    storageDatacenterName: hosted_storage
     storage_type: <%= @deployment.rhev_storage_type %>
-#    engines:
-#      - id: 8
-#    hypervisors:
-#      - id: 9
+    engines:
+<% for host in @rhv_engines %>
+      <%= "- id: #{host.discovered_host_id}" %>
+      <%= "  new_name: #{host.new_name}" %>
+      <%= "  hostgroup_title: #{host.hostgroup_title}" %>
+<% end %>
+    hypervisors:
+<% for host in @rhv_hypervisors %>
+      <%= "- id: #{host.discovered_host_id}" %>
+      <%= "  new_name: #{host.new_name}" %>
+      <%= "  hostgroup_title: #{host.hostgroup_title}" %>
+<% end %>
+
 <% end %>
 
 config:

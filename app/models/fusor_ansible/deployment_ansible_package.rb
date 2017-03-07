@@ -46,36 +46,45 @@ module FusorAnsible
     end
 
     def init_file_info(deployment)
-      @vars_file_info = get_file_info('vars.yml', ::FusorAnsible::Bindings::VarsBindings.new(deployment).get_binding)
-      @vault_file_info = get_file_info('vault.yml', ::FusorAnsible::Bindings::VaultBindings.new(deployment).get_binding, true)
-      @hosts_file_info = get_file_info('hosts', ::FusorAnsible::Bindings::HostsBindings.new(deployment).get_binding)
-      @playbook_file_info = get_file_info('deploy.yml', ::FusorAnsible::Bindings::DeployBindings.new(deployment).get_binding)
+      default_binding = ::FusorAnsible::TemplateBindings::Default.new(deployment).get_binding
 
+      @vars_file_info = get_file_info('vars.yml', ::FusorAnsible::TemplateBindings::Vars.new(deployment).get_binding)
+      @vault_file_info = get_file_info('vault.yml', default_binding, true)
+      @hosts_file_info = get_file_info('hosts', ::FusorAnsible::TemplateBindings::Hosts.new(deployment).get_binding)
+      @playbook_file_info = get_file_info('deploy.yml', default_binding)
       @files = [@vars_file_info, @vault_file_info, @hosts_file_info, @playbook_file_info]
-      @files << get_file_info('prep_satellite.yml', ::FusorAnsible::Bindings::PrepSatelliteBindings.new(deployment).get_binding)
+
+      @files << get_file_info('satellite_prep.yml', default_binding)
 
       # if deployment.deploy_ceph
-      #   @files << get_file_info('deploy_ceph.yml', ::FusorAnsible::Bindings::DeployCephBindings.new(deployment).get_binding)
+      #   @files << get_file_info('deploy_ceph.yml', default_binding)
       # end
 
       if deployment.deploy_rhev
-        @files << get_file_info('deploy_rhv.yml', ::FusorAnsible::Bindings::DeployRhvBindings.new(deployment).get_binding)
+        @files << get_file_info('rhv_pre.yml', default_binding)
+        if deployment.rhev_is_self_hosted
+          @files << get_file_info('rhv_deploy_self_hosted.yml', default_binding)
+        else
+          @files << get_file_info('rhv_deploy.yml', default_binding)
+        end
+        @files << get_file_info('rhv_deploy.yml', default_binding)
+        @files << get_file_info('rhv_post.yml', default_binding)
       end
 
       if deployment.deploy_openstack
-        @files << get_file_info('deploy_openstack.yml', ::FusorAnsible::Bindings::DeployOpenstackBindings.new(deployment).get_binding)
+        @files << get_file_info('openstack_deploy.yml', default_binding)
       end
 
       if deployment.deploy_openshift
-        @files << get_file_info('deploy_openshift.yml', ::FusorAnsible::Bindings::DeployOpenshiftBindings.new(deployment).get_binding)
+        @files << get_file_info('openshift_deploy.yml', default_binding)
       end
 
       if deployment.deploy_rhev && deployment.deploy_cfme
-        @files << get_file_info('deploy_cfme_rhv.yml', ::FusorAnsible::Bindings::DeployCfmeRhvBindings.new(deployment).get_binding)
+        @files << get_file_info('cfme_rhv_deploy.yml', default_binding)
       end
 
       if deployment.deploy_openstack && deployment.deploy_cfme
-        @files << get_file_info('deploy_cfme_openstack.yml', ::FusorAnsible::Bindings::DeployCfmeOpenstackBindings.new(deployment).get_binding)
+        @files << get_file_info('cfme_openstack_deploy.yml', default_binding)
       end
     end
     
