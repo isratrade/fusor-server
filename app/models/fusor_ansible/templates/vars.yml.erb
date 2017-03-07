@@ -11,37 +11,39 @@ deployment:
     root_password: "{{vault.deployment.rhv.root_password}}"
     admin_password: "{{vault.deployment.rhv.admin_password}}"
     cluster_name: <%= @deployment.rhev_cluster_name %>
-#    config_dir: /etc/qci/
-#    cpu_model: model_Haswell-noTSX
+    config_dir: /etc/qci
+    cpu_model: <%= @rhv_cpu_model %>
     cpu_type: <%= @deployment.rhev_cpu_type %>
-    create_export_domain: <%= @deployment.deploy_cfme && @deployment.cfme_install_loc == 'RHEV'%>
     data_storage_address: <%= @deployment.rhev_storage_address %>
     data_storage_name: <%= @deployment.rhev_storage_name %>
     data_storage_path: <%= @deployment.rhev_share_path %>
     data_center_name: <%= @deployment.rhev_data_center_name %>
     engine_activation_key: RHV_Engine-<%= @deployment.label %>-RHV_Engine
     engine_db_password: "{{vault.deployment.rhv.engine_db_password}}"
-#    engine_fqdn: mac52540083108d.fusor.net
-#    engine_mac_address: 52:54:00:83:10:8d
+    create_export_domain: <%= @deployment.deploy_cfme && @deployment.cfme_install_loc == 'RHEV'%>
     export_storage_address: <%= @deployment.rhev_export_domain_address %>
     export_storage_name: <%= @deployment.rhev_export_domain_name %>
     export_storage_path: <%= @deployment.rhev_export_domain_path %>
-#    gateway: 192.168.241.1
-#    mac_address_range: 00:1A:00:00:00:00,00:1A:00:FF:FF:FF
+    gateway: <%= @satellite_subnet_gateway %>
+    mac_address_range: <%= @rhv_mac_address_range %>
     mac_pool_name: qci
     satellite_fqdn: <%= @satellite_fqdn %>
-#    storageDatacenterName: hosted_storage
-    storage_type: <%= @deployment.rhev_storage_type %>
+    self_hosted_storage_datacenter_name: hosted_storage
+    storage_type: <%= @deployment.rhev_storage_type.downcase %>
     engines:
 <% for host in @rhv_engines %>
       <%= "- id: #{host.discovered_host_id}" %>
       <%= "  new_name: #{host.new_name}" %>
+      <%= "  fqdn: #{host.fqdn}" %>
+      <%= "  mac_address: #{host.mac_address}" %>
       <%= "  hostgroup_title: #{host.hostgroup_title}" %>
 <% end %>
     hypervisors:
 <% for host in @rhv_hypervisors %>
       <%= "- id: #{host.discovered_host_id}" %>
       <%= "  new_name: #{host.new_name}" %>
+      <%= "  fqdn: #{host.fqdn}" %>
+      <%= "  mac_address: #{host.mac_address}" %>
       <%= "  hostgroup_title: #{host.hostgroup_title}" %>
 <% end %>
 
