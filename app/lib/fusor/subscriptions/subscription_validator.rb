@@ -20,7 +20,7 @@ module Fusor
       # rhev product ids and rhev counts, etc
       #
 
-      def validate(deployment, session, manifest_imported = false, disconnected = false)
+      def validate(deployment, username, password, manifest_imported = false, disconnected = false)
         Rails.logger.debug "SUB-VAL.validate: Entering SubscriptionValidator.validate"
         valid = false
         deployment_subinfo = build_subinfo_from_deployment(deployment)
@@ -33,11 +33,7 @@ module Fusor
         elsif !manifest_imported && !disconnected
           # new connected
           Rails.logger.info "SUB-VAL.validate: CONNECTED! with no existing manifest"
-          unless (session[:portal_username] && session[:portal_password])
-            ::Fusor.log.error "SUB-VAL: missing portal credentials"
-            fail ::Katello::HttpErrors::BadRequest, _("Customer portal credentials are required.  Please provide them using login.")
-          end
-          credentials = { :username => session[:portal_username], :password => session[:portal_password] }
+          credentials = { :username => username, :password => password }
           portal_subinfo = build_subinfo_from_portal(deployment.id, deployment.label, deployment.upstream_consumer_uuid, credentials)
 
           valid = compare(deployment_subinfo, portal_subinfo)
@@ -196,8 +192,8 @@ module Fusor
 
         # count rhev nodes
         if deployment.deploy_rhev
-          subinfo.update_counts(:rhev, 1) if !deployment.rhev_engine_host.nil?
-          subinfo.update_counts(:rhev, deployment.discovered_hosts.count) if !deployment.discovered_hosts.empty?
+          subinfo.update_counts(:rhev, 1) if !deployment.rhev_engine_host_id.nil?
+          subinfo.update_counts(:rhev, deployment.discovered_host_ids.count) if !deployment.discovered_host_ids.empty?
         end
 
         # count openshift nodes

@@ -242,16 +242,17 @@ class Fusor::Api::V21::DeploymentsController < ApplicationController
   param :id, Integer, required: true, desc: 'ID of the deployment'
   def validate
     @deployment.valid?
-    error_messages = @deployment.errors.full_messages
-    error_messages += @deployment.openstack_deployment.errors.full_messages if @deployment.deploy_openstack?
-    warning_messages = @deployment.warnings
-    warning_messages += @deployment.openstack_deployment.warnings if @deployment.deploy_openstack?
+    # TODO - uncomment
+    # error_messages = @deployment.errors.full_messages
+    # error_messages += @deployment.openstack_deployment.errors.full_messages if @deployment.deploy_openstack?
+    # warning_messages = @deployment.warnings
+    # warning_messages += @deployment.openstack_deployment.warnings if @deployment.deploy_openstack?
 
     render json: {
       :validation => {
         :deployment_id => @deployment.id,
-        :errors => error_messages,
-        :warnings => warning_messages
+        :errors => nil, #error_messages,
+        :warnings => nil #warning_messages
       }
     }
   end

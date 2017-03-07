@@ -80,7 +80,8 @@ module Fusor
 
           #   RestClient.proxy = uri.to_s
           # end
-
+          Rails.logger.info "-------------self.rest_client----------"
+          Rails.logger.info "credentials is #{credentials}"
           options = {}
           if credentials[:username] && credentials[:password]
             options[:headers] = self.default_headers
@@ -92,7 +93,9 @@ module Fusor
             options[:ssl_client_key] = OpenSSL::PKey::RSA.new(credentials[:client_key])
             options[:verify_ssl] = OpenSSL::SSL::VERIFY_NONE
           end
-
+          Rails.logger.info '-----------------'
+          Rails.logger.info prefix + path
+          Rails.logger.info '-----------------'
           RestClient::Resource.new(prefix + path, options)
         end
       end
