@@ -1,8 +1,62 @@
-- hosts: satellite
-  tasks:
-    - name: Deploy RHV
-      command: echo rhv_deploy
-      register: echo_output
+---
+- hosts: rhv-engine
+  remote_user: root
+  roles:
+    - override_tty
+    - role: subscription_enable_repos
+      repositories: "{{ config.rhv.engine_repositories }}"
+    - wait_for_yum_lock
+    - role: rhv_engine_install
+      config_dir: "{{ deployment.rhv.config_dir }}"
+      admin_password: "{{ deployment.rhv.admin_password }}"
+      engine_fqdn: "{{ deployment.rhv.engines[0].fqdn }}"
+      engine_db_password: "{{ deployment.rhv.engine_db_password }}"
+      storage_type: "{{ deployment.rhv.storage_type }}"
+    - role: rhv_engine_wait
+      engine_fqdn: "{{ deployment.rhv.engines[0].fqdn }}"
+    - role: rhv_datacenter
+      config_dir: "{{ deployment.rhv.config_dir }}"
+      engine_fqdn: "{{ deployment.rhv.engines[0].fqdn }}"
+      admin_password: "{{ deployment.rhv.admin_password }}"
+      data_center_name: "{{ deployment.rhv.data_center_name }}"
+      cluster_name: "{{ deployment.rhv.cluster_name }}"
+      cpu_type: "{{ deployment.rhv.cpu_type }}"
+      mac_address_range: "{{ deployment.rhv.mac_address_range }}"
+      mac_pool_name: "{{ deployment.rhv.mac_pool_name }}"
 
-    - debug:
-        var: echo_output
+- hosts: rhv-hypervisors
+  remote_user: root
+  roles:
+    - override_tty
+    - role: subscription_enable_repos
+      repositories: "{{ config.rhv.hypervisor_repositories }}"
+    - wait_for_yum_lock
+    - rhv_hypervisor_install
+    - role: rhv_engine_wait
+      engine_fqdn: "{{ deployment.rhv.engines[0].fqdn }}"
+    - role: rhv_hypervisor_register
+      config_dir: "{{ deployment.rhv.config_dir }}"
+      engine_fqdn: "{{ deployment.rhv.engines[0].fqdn }}"
+      script_runner: "{{ deployment.rhv.engines[0].fqdn }}"
+      admin_password: "{{ deployment.rhv.admin_password }}"
+      root_password: "{{ deployment.rhv.root_password }}"
+
+- hosts: rhv-engine
+  remote_user: root
+  roles:
+    - role: rhv_engine_wait
+      engine_fqdn: "{{ deployment.rhv.engines[0].fqdn }}"
+    - role: rhv_storage
+      config_dir: "{{ deployment.rhv.config_dir }}"
+      engine_fqdn: "{{ deployment.rhv.engines[0].fqdn }}"
+      data_center_name: "{{ deployment.rhv.data_center_name }}"
+      storage_type: "{{ deployment.rhv.storage_type }}"
+      admin_password: "{{ deployment.rhv.admin_password }}"
+      data_storage_name: "{{ deployment.rhv.data_storage_name }}"
+      data_storage_address: "{{ deployment.rhv.data_storage_address }}"
+      data_storage_path: "{{ deployment.rhv.data_storage_path }}"
+      create_export_domain: "{{ deployment.rhv.create_export_domain }}"
+      export_storage_name: "{{ deployment.rhv.export_storage_name }}"
+      export_storage_address: "{{ deployment.rhv.export_storage_address }}"
+      export_storage_path: "{{ deployment.rhv.export_storage_path }}"
+

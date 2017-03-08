@@ -1,8 +1,13 @@
+---
 - hosts: satellite
-  tasks:
-    - name: Post-Deploy RHV
-      command: echo rhv_post
-      register: echo_output
-
-    - debug:
-        var: echo_output
+  roles:
+    - role: satellite_compute_resource_create
+      username: "{{ config.satellite.admin_user }}"
+      password: "{{ config.satellite.admin_password }}"
+      name: "{{deployment.label}}-RHV"
+      organizations: "{{ config.satellite.default_org_name }}"
+      locations: "{{ deployment.location_name }}"
+      url:  https://{{ deployment.rhv.engines[0].fqdn}}/ovirt-engine/api/v3
+      provider: Ovirt
+      resource_user: "admin@internal"
+      resource_password: "{{ deployment.rhv.admin_password}}"
