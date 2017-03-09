@@ -422,7 +422,8 @@ class Fusor::Api::V21::DeploymentsController < ApplicationController
       :openshift_export_path, :openshift_subdomain_name,
       :cdn_url, :manifest_file, :created_at, :updated_at, :rhev_engine_host_id,
       :organization_id, :lifecycle_environment_id, :discovered_host_id,
-      :foreman_task_id, :openstack_deployment_id
+      :foreman_task_id, :openstack_deployment_id,
+      :discovered_host_ids_names, :dddd
     ]
 
     #############################################################

@@ -139,7 +139,13 @@ class Deployment < ActiveRecord::Base
     @discovered_host_ids ||= self.deployment_hypervisor_hosts.pluck(:discovered_host_id)
   end
 
-  def discovered_host_ids=(ids = [])
+  def dddd=(ids_names = nil)
+    Rails.logger.debug 'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX'
+    Rails.logger.info 'YYXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX'
+    arr = ids_names.split(',')
+    arr_ids_names = arr.each_slice(arr.count / 2).to_a
+    ids   = arr_ids_names[0]
+    names = arr_ids_names[1]
     # delete rows if array is not empty
     self.deployment_hypervisor_hosts
         .where(discovered_host_id: self.discovered_host_ids - ids)
@@ -149,6 +155,8 @@ class Deployment < ActiveRecord::Base
     (ids - self.discovered_host_ids).each do |id|
       deployment_hypervisor_hosts.create(discovered_host_id: id)
     end
+    Rails.logger.debug 'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX'
+    Rails.logger.debug 'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX'
   end
 
   def update_label
