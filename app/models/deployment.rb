@@ -142,19 +142,17 @@ class Deployment < ActiveRecord::Base
   def discovered_host_ids_names=(ids_names = nil)
     Rails.logger.info 'YYXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX'
     Rails.logger.info ids_names
-    arr_ids_names = ids_names.split(',')
-    Rails.logger.info arr_ids_names
-    num_hosts = arr_ids_names.count / 2
+    num_hosts = ids_names.count / 2
     array_hosts = Array.new
     array_ids   = Array.new
     hash_hosts = Hash.new
     num_hosts.times do |i|
       Rails.logger.info "i is #{i}"
-      array_hosts << [arr_ids_names[i], arr_ids_names[num_hosts + i]]
-      array_ids   << arr_ids_names[i]
-      hash_hosts.merge!(Hash[arr_ids_names[i] => arr_ids_names[num_hosts + i]])
+      array_hosts << [ids_names[i], ids_names[num_hosts + i]]
+      array_ids   << ids_names[i]
+      hash_hosts.merge!(Hash[ids_names[i] => ids_names[num_hosts + i]])
     end
-    Rails.logger.info arr_ids_names
+    Rails.logger.info ids_names
     Rails.logger.info array_ids
     Rails.logger.info hash_hosts
    # delete rows if array is not empty
