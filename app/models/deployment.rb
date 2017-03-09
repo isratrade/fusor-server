@@ -139,15 +139,35 @@ class Deployment < ActiveRecord::Base
     @discovered_host_ids ||= self.deployment_hypervisor_hosts.pluck(:discovered_host_id)
   end
 
-  def discovered_host_ids=(ids = [])
-    # delete rows if array is not empty
-    self.deployment_hypervisor_hosts
-        .where(discovered_host_id: self.discovered_host_ids - ids)
-        .destroy_all
+  def discovered_host_names
+    @discovered_host_names ||= self.deployment_hypervisor_hosts.pluck(:host_name)
+  end
 
-    # add rows if array is not empty
-    (ids - self.discovered_host_ids).each do |id|
-      deployment_hypervisor_hosts.create(discovered_host_id: id)
+  def discovered_host_ids_names=(ids_names = [])
+    num_hosts = ids_names.count / 2
+    array_ids  = Array.new
+    array_names = Array.new
+    hash_hosts = Hash.new
+    num_hosts.times do |i|
+      array_ids << ids_names[i]
+      array_names << ids_names[num_hosts + i]
+      hash_hosts.merge!(Hash[ids_names[i] => ids_names[num_hosts + i]])
+    end
+
+    # don't delete/add rows if nothing changed
+    if (self.discovered_host_ids.sort != array_ids.map(&:to_i).sort) ||
+       (self.discovered_host_names.sort != array_names.sort)
+
+      # delete rows if array is not empty
+      self.deployment_hypervisor_hosts
+          .where(discovered_host_id: self.discovered_host_ids - array_ids)
+          .destroy_all
+
+      # add rows if array is not empty
+      (array_ids - self.discovered_host_ids).each do |id|
+        deployment_hypervisor_hosts.create(discovered_host_id: id,
+                                           host_name: hash_hosts[id])
+      end
     end
   end
 
