@@ -431,10 +431,10 @@ class Fusor::Api::V21::DeploymentsController < ApplicationController
     # strong params will filter the value so it does not impact an update.
     # See discussion: https://github.com/rails/rails/issues/13766
     #############################################################
-    if params[:deployment][:discovered_host_ids].nil?
-      allowed << :discovered_host_ids
+    if params[:deployment][:discovered_host_ids_names].nil?
+      allowed << :discovered_host_ids_names
     else
-      allowed << { :discovered_host_ids => [] }
+      allowed << { :discovered_host_ids_names => [] }
     end
     #############################################################
 
