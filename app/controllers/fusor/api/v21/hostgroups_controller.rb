@@ -6,7 +6,9 @@ class Fusor::Api::V21::HostgroupsController < ApplicationController
   #include Api::Version21
 
   def index
-    render json: {hostgroups: get_hostgroups}
+    render json: {hostgroups: get_hostgroups,
+                  domains: get_domains
+                 }
   end
 
   def show
