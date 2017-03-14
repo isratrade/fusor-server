@@ -14,6 +14,7 @@ Rails.application.routes.draw do
             get :openshift_disk_space
             get :check_mount_point
             get :compatible_cpu_families
+            put :add_rhv_engine
           end
 
           resources :subscriptions do
