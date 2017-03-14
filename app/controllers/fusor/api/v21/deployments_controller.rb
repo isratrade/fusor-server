@@ -27,7 +27,8 @@ class Fusor::Api::V21::DeploymentsController < ApplicationController
                                         :validate,
                                         :log,
                                         :openshift_disk_space,
-                                        :compatible_cpu_families]
+                                        :compatible_cpu_families,
+                                        :add_rhv_engine]
 
   include Fusor::Api::V21::DiscoveredHostsMixin
   include Fusor::Api::V21::OrganizationsMixin
@@ -381,6 +382,38 @@ class Fusor::Api::V21::DeploymentsController < ApplicationController
       message = error.message if error.respond_to?(:message)
 
       render json: { :error => message}, status: 500
+    end
+  end
+
+  def add_rhv_engine
+    engine_id = params['engine_id']
+    engine_name = params['engine_name']
+
+    # don't delete/add rows if nothing changed
+    if (@deployment.rhev_engine_host_id != engine_id) ||
+       (@deployment.rhev_self_hosted_engine_hostname != engine_name)
+
+      rhv_engine = DeploymentHost.where(deployment_id: @deployment.id,
+                           discovered_host_id: @deployment.rhev_engine_host_id,
+                           deployment_host_type: 'rhv_engine').first
+
+      if rhv_engine.present?
+        # update row if it exists
+        rhv_engine.discovered_host_id = engine_id
+        rhv_engine.host_name = engine_name
+        if rhv_engine.save
+          render json: {}, status: 200
+        else
+          render json: {error: 'error saving rhv engine'}, status: 400
+        end
+      else
+        # add row
+        DeploymentHost.create(deployment_id: @deployment.id,
+                              discovered_host_id: engine_id,
+                              host_name: engine_name,
+                              deployment_host_type: 'rhv_engine')
+        render json: {}, status: 201
+      end
     end
   end
 
